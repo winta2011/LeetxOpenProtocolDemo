@@ -92,7 +92,7 @@ namespace Leetx.OpenProtocol
                 {
                     ConnnectStatus = "开始连接...";
                     OpenTcpClient(ipString, port);
-                    if (tcpClient?.Connected == false || networkStream == null)
+                    if (tcpClient==null || tcpClient.Connected == false || networkStream == null)
                     {
                         await Task.Delay(3000);
                         continue;
@@ -122,7 +122,7 @@ namespace Leetx.OpenProtocol
                         ConnnectStatus = "发送曲线订阅7408";
                         subOk = await Subscribe(new Mid7408(2, 0).Pack()); //订阅曲线
                     }
-
+                    keepAliveWatch = DateTime.Now;
                     while (bRunFlag)
                     {
                         if (tcpClient != null && tcpClient.Connected)
@@ -192,9 +192,9 @@ namespace Leetx.OpenProtocol
             catch (Exception ex)
             {
                 tcpClient?.Dispose();
-                networkStream?.Dispose();
                 tcpClient = null;
-                networkStream = null;       
+                bRunFlag = false;
+                networkStream?.Dispose();
                 ConnnectStatus = $"Connect to {ipString} Failed,ConnectId={connectId},failed reason[{ex.Message}],Reconnecting....";
             }
         }
