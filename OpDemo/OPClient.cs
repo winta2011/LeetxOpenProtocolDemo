@@ -7,6 +7,7 @@ using OpenProtocolInterpreter.Tightening;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -180,8 +181,7 @@ namespace Leetx.OpenProtocol
                 tcpClient.Connect(ipString, port);
                 if (tcpClient.Connected == false)
                 {
-                    tcpClient.Dispose();
-                    networkStream?.Dispose();
+                    throw new Exception("连接OP服务失败...");
                 }
                 else
                 {
@@ -193,6 +193,8 @@ namespace Leetx.OpenProtocol
             {
                 tcpClient?.Dispose();
                 networkStream?.Dispose();
+                tcpClient = null;
+                networkStream = null;       
                 ConnnectStatus = $"Connect to {ipString} Failed,ConnectId={connectId},failed reason[{ex.Message}],Reconnecting....";
             }
         }
