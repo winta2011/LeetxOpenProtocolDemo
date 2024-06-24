@@ -5,9 +5,7 @@ using OpenProtocolInterpreter.Curve;
 using OpenProtocolInterpreter.KeepAlive;
 using OpenProtocolInterpreter.Tightening;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -67,8 +65,14 @@ namespace Leetx.OpenProtocol
         {
 
         }
-
-        public async Task<bool> Open(string ipString, int port, int ReConnectTimes = 1)
+        /// <summary>
+        /// 打开OP通讯客户端
+        /// </summary>
+        /// <param name="ipString">工具OP服务IP</param>
+        /// <param name="port">工具OP服务端口号</param>
+        /// <param name="keepAliveInterval">Op心跳间隔</param>
+        /// <returns></returns>
+        public async Task<bool> Open(string ipString, int port, int keepAliveInterval = 3000 )
         {
             midInterpreter = new MidInterpreter()
                                             .UseAllMessages(new Type[]
@@ -86,7 +90,7 @@ namespace Leetx.OpenProtocol
                 try
                 {
                     ConnnectStatus = "开始连接...";
-                    OpenClient(ipString, port);
+                    OpenTcpClient(ipString, port);
                     if (tcpClient?.Connected == false || networkStream == null)
                     {
                         await Task.Delay(3000);
@@ -134,7 +138,7 @@ namespace Leetx.OpenProtocol
                             bRunFlag = false;
                             Console.WriteLine($"{ipTimeOut}心跳超时, 退出");
                         }
-                        await Task.Delay(3000);
+                        await Task.Delay(keepAliveInterval);
                     }
                 }
                 catch (Exception ex)
@@ -166,7 +170,7 @@ namespace Leetx.OpenProtocol
         }
 
 
-        void OpenClient(string ipString, int port)
+        void OpenTcpClient(string ipString, int port)
         {
             ip = ipString;
             try
@@ -301,6 +305,12 @@ namespace Leetx.OpenProtocol
             networkStream.WriteAsync(TxBuf, 0, bytes.Length + 1);
         }
 
+        /// <summary>
+        /// 发送Mid指令
+        /// </summary>
+        /// <param name="str">指令文本</param>
+        /// <param name="timeout">指令超时时间</param>
+        /// <returns>响应的Mid</returns>
         public async Task<Mid> SendMidWithResponse(string str, int timeout = Timeout)
         {
             await WriteMidAsync(str, timeout);
@@ -312,7 +322,23 @@ namespace Leetx.OpenProtocol
             }
             return null;
         }
-
+        /// <summary>
+        /// 发送Mid指令
+        /// </summary>
+        /// <param name="midCmd">指令类型Mid</param>
+        /// <param name="timeout">指令超时时间</param>
+        /// <returns>响应的Mid</returns>
+        public async Task<Mid> SendMidWithResponse(Mid midCmd, int timeout = Timeout)
+        {
+            await WriteMidAsync(midCmd.Pack(), timeout);
+            bool bOK = await sem.WaitAsync(timeout);
+            if (bOK)
+            {
+                Mid mid = midInterpreter.Parse(sQueryResponse);
+                return mid;
+            }
+            return null;
+        }
         private const int RetryTimes = 3;
 
         private async Task<Mid0002> StartCommunication()
