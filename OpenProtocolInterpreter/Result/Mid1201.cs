@@ -1,180 +1,217 @@
-﻿
-// Type: OpenProtocolInterpreter.Result.Mid1201
-using OpenProtocolInterpreter.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Text;
 
 namespace OpenProtocolInterpreter.Result
 {
-  public class Mid1201 : Mid, IResult, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private readonly IValueConverter<DateTime> _dateConverter;
-    private readonly IValueConverter<bool> _boolConverter;
-    private readonly IValueConverter<IEnumerable<ObjectData>> _objectDataListConverter;
-    private readonly IValueConverter<IEnumerable<VariableDataField>> _varDataFieldListConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 1201;
-
-    public Mid1201()
-      : base(1201, 1)
+    /// <summary>
+    /// Operation result Overall data
+    /// <para>
+    ///     This MID contains the overall result data and some of the object data of the last tightening. 
+    ///     In the subscription of this message it can be chosen to also start subscription of <see cref="Mid1202"/> Operation result object data. 
+    ///     The user defined values is preconfigured in the controller via the configuration tool.
+    /// </para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>
+    ///     Answer: <see cref="Mid1203"/> Operation result data acknowledge or 
+    ///             <see cref="Communication.Mid0005"/> with <see cref="Mid1201"/> in the data field.
+    /// </para>
+    /// <para>If the sequence number acknowledge functionality is used there is no need for these acknowledges.</para>
+    /// </summary>
+    public class Mid1201 : Mid, IResult, IController, IAcknowledgeable<Mid1203>, IAcceptableCommand
     {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this._dateConverter = (IValueConverter<DateTime>) new DateConverter();
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-      this._objectDataListConverter = (IValueConverter<IEnumerable<ObjectData>>) new ObjectDataListConverter(this._intConverter, this._boolConverter);
-      this._varDataFieldListConverter = (IValueConverter<IEnumerable<VariableDataField>>) new VariableDataFieldListConverter(this._intConverter);
-      this.ObjectDataList = new List<ObjectData>();
-      this.VariableDataFields = new List<VariableDataField>();
-    }
+        public const int MID = 1201;
 
-    public int TotalNumberOfMessages
-    {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int MessageNumber
-    {
-      get => this.GetField(1, 1).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 1).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int ResultDataIdentifier
-    {
-      get => this.GetField(1, 2).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 2).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public DateTime Time
-    {
-      get
-      {
-        return this.GetField(1, 3).GetValue<DateTime>(new Func<string, DateTime>(this._dateConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 3).SetValue<DateTime>(new Func<char, int, DataField.PaddingOrientations, DateTime, string>(this._dateConverter.Convert), value);
-      }
-    }
-
-    public bool ResultStatus
-    {
-      get
-      {
-        return this.GetField(1, 4).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 4).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
-
-    public OperationType OperationType
-    {
-      get
-      {
-        return (OperationType) this.GetField(1, 5).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 5).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
-
-    public int NumberOfObjects
-    {
-      get => this.GetField(1, 6).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 6).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int NumberOfDataFields
-    {
-      get => this.GetField(1, 8).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 8).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public List<ObjectData> ObjectDataList { get; set; }
-
-    public List<VariableDataField> VariableDataFields { get; set; }
-
-    public override string Pack()
-    {
-      this.NumberOfObjects = this.ObjectDataList.Count;
-      this.NumberOfDataFields = this.VariableDataFields.Count;
-      this.GetField(1, 7).SetValue(this._objectDataListConverter.Convert((IEnumerable<ObjectData>) this.ObjectDataList));
-      this.GetField(1, 9).SetValue(this._varDataFieldListConverter.Convert((IEnumerable<VariableDataField>) this.VariableDataFields));
-      return base.Pack();
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      int num = this._intConverter.Convert(this.GetValue(this.GetField(1, 6), package));
-      DataField field1 = this.GetField(1, 7);
-      field1.Size = num * 5;
-      DataField field2 = this.GetField(1, 8);
-      field2.Index = field1.Index + field1.Size;
-      DataField field3 = this.GetField(1, 9);
-      field3.Index = field2.Index + field2.Size;
-      field3.Size = package.Length - field3.Index;
-      this.ObjectDataList = this._objectDataListConverter.Convert(field1.Value).ToList<ObjectData>();
-      this.VariableDataFields = this._varDataFieldListConverter.Convert(field3.Value).ToList<VariableDataField>();
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int TotalNumberOfMessages
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(1, 23, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(2, 26, 10, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(3, 36, 4, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(4, 55, 1, false),
-            new DataField(5, 56, 2, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(6, 58, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(7, 61, 0, false),
-            new DataField(8, 0, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(9, 0, 0, false)
-          }
+            get => GetField(Header.StandardizedRevision, DataFields.TotalMessages).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(Header.StandardizedRevision, DataFields.TotalMessages).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public int MessageNumber
+        {
+            get => GetField(Header.StandardizedRevision, DataFields.MessageNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(Header.StandardizedRevision, DataFields.MessageNumber).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int ResultDataIdentifier
+        {
+            get => GetField(Header.StandardizedRevision, DataFields.ResultDataIdentifier).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(Header.StandardizedRevision, DataFields.ResultDataIdentifier).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public DateTime Time
+        {
+            get => GetField(Header.StandardizedRevision, DataFields.Time).GetValue(OpenProtocolConvert.ToDateTime);
+            set => GetField(Header.StandardizedRevision, DataFields.Time).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public bool ResultStatus
+        {
+            get => GetField(Header.StandardizedRevision, DataFields.ResultStatus).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(Header.StandardizedRevision, DataFields.ResultStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public OperationType OperationType
+        {
+            get => (OperationType)GetField(Header.StandardizedRevision, DataFields.OperationType).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(Header.StandardizedRevision, DataFields.OperationType).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int RequestMid
+        {
+            get => GetField(Header.StandardizedRevision, DataFields.RequestMid).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(Header.StandardizedRevision, DataFields.RequestMid).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int NumberOfObjects
+        {
+            get => GetField(Header.StandardizedRevision, DataFields.NumberOfObjects).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(Header.StandardizedRevision, DataFields.NumberOfObjects).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int NumberOfDataFields
+        {
+            get => GetField(Header.StandardizedRevision, DataFields.NumberOfDataFields).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(Header.StandardizedRevision, DataFields.NumberOfDataFields).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public List<ObjectData> ObjectDataList { get; set; }
+        public List<VariableDataField> VariableDataFields { get; set; }
 
-    public enum DataFields
-    {
-      TOTAL_MESSAGES,
-      MESSAGE_NUMBER,
-      RESULT_DATA_IDENTIFIER,
-      TIME,
-      RESULT_STATUS,
-      OPERATION_TYPE,
-      NUMBER_OF_OBJECTS,
-      OBJECT_DATA,
-      NUMBER_OF_DATA_FIELDS,
-      DATA_FIELD_LIST,
+        public Mid1201() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid1201(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+        }
+
+        public Mid1201(Header header) : base(header)
+        {
+            ObjectDataList = [];
+            VariableDataFields = [];
+        }
+
+        protected override string BuildHeader()
+        {
+            Header.Length = 20 + RevisionsByFields[Header.StandardizedRevision].Sum(x => x.Size + (x.HasPrefix ? 2 : 0));
+            return Header.ToString();
+        }
+
+        public override string Pack()
+        {
+            NumberOfObjects = ObjectDataList.Count;
+            NumberOfDataFields = VariableDataFields.Count;
+            var revision = Header.StandardizedRevision;
+            GetField(revision, DataFields.ObjectData).SetValue(PackObjectDataList());
+            GetField(revision, DataFields.DataFieldList).SetValue(OpenProtocolConvert.ToString(VariableDataFields));
+
+            var index = 1;
+            return string.Concat(BuildHeader(), base.Pack(revision, ref index));
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+
+            var revision = Header.StandardizedRevision;
+            var rawTotalObjectData = GetValue(GetField(revision, DataFields.NumberOfObjects), package);
+            int totalObjectData = OpenProtocolConvert.ToInt32(rawTotalObjectData);
+
+            var objectDataField = GetField(revision, DataFields.ObjectData);
+            objectDataField.Size = totalObjectData * ObjectData.Size(Header.Revision);
+
+            var totalNumberDataField = GetField(revision, DataFields.NumberOfDataFields);
+            totalNumberDataField.Index = objectDataField.Index + objectDataField.Size;
+
+            var dataFieldListField = GetField(revision, DataFields.DataFieldList);
+            dataFieldListField.Index = totalNumberDataField.Index + totalNumberDataField.Size;
+            dataFieldListField.Size = Header.Length - dataFieldListField.Index;
+
+            ProcessDataFields(revision, package);
+            ObjectDataList = ObjectData.ParseAll(revision, objectDataField.Value).ToList();
+            VariableDataFields = VariableDataField.ParseAll(dataFieldListField.Value).ToList();
+            return this;
+        }
+
+        protected virtual string PackObjectDataList()
+        {
+            var builder = new StringBuilder();
+            foreach (var v in ObjectDataList)
+            {
+                builder.Append(v.Pack(Header.StandardizedRevision));
+            }
+
+            return builder.ToString();
+        }
+
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.TotalMessages, 20, 3, false),
+                        DataField.Number(DataFields.MessageNumber, 23, 3, false),
+                        DataField.Number(DataFields.ResultDataIdentifier, 26, 10, false),
+                        DataField.Timestamp(DataFields.Time, 36, false),
+                        DataField.Boolean(DataFields.ResultStatus, 55, false),
+                        DataField.Number(DataFields.OperationType, 56, 2, false),
+                        DataField.Number(DataFields.NumberOfObjects, 58, 3, false),
+                        DataField.Volatile(DataFields.ObjectData, 61, false),
+                        DataField.Number(DataFields.NumberOfDataFields, 0, 3, false),
+                        DataField.Volatile(DataFields.DataFieldList, 0, false)
+                    }
+                },
+                {
+                    2, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.TotalMessages, 20, 3, false),
+                        DataField.Number(DataFields.MessageNumber, 23, 3, false),
+                        DataField.Number(DataFields.ResultDataIdentifier, 26, 10, false),
+                        DataField.Timestamp(DataFields.Time, 36, false),
+                        DataField.Boolean(DataFields.ResultStatus, 55, false),
+                        DataField.Number(DataFields.OperationType, 56, 2, false),
+                        DataField.Number(DataFields.RequestMid, 58, 4, false),
+                        DataField.Number(DataFields.NumberOfObjects, 62, 3, false),
+                        DataField.Volatile(DataFields.ObjectData, 65, false),
+                        DataField.Number(DataFields.NumberOfDataFields, 0, 3, false),
+                        DataField.Volatile(DataFields.DataFieldList, 0, false)
+                    }
+                },
+                {
+                    3, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.TotalMessages, 20, 3, false),
+                        DataField.Number(DataFields.MessageNumber, 23, 3, false),
+                        DataField.Number(DataFields.ResultDataIdentifier, 26, 10, false),
+                        DataField.Timestamp(DataFields.Time, 36, false),
+                        DataField.Boolean(DataFields.ResultStatus, 55, false),
+                        DataField.Number(DataFields.OperationType, 56, 2, false),
+                        DataField.Number(DataFields.RequestMid, 58, 4, false),
+                        DataField.Number(DataFields.NumberOfObjects, 62, 3, false),
+                        DataField.Volatile(DataFields.ObjectData, 65, false),
+                        DataField.Number(DataFields.NumberOfDataFields, 0, 3, false),
+                        DataField.Volatile(DataFields.DataFieldList, 0, false)
+                    }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            TotalMessages,
+            MessageNumber,
+            ResultDataIdentifier,
+            Time,
+            ResultStatus,
+            OperationType,
+            RequestMid,
+            NumberOfObjects,
+            ObjectData,  // list of data
+            NumberOfDataFields,
+            DataFieldList
+        }
     }
-  }
 }
+

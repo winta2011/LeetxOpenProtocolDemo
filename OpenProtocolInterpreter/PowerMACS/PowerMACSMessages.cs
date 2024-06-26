@@ -1,53 +1,36 @@
-﻿
-// Type: OpenProtocolInterpreter.PowerMACS.PowerMACSMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.PowerMACS
 {
-  internal class PowerMACSMessages : MessagesTemplate
-  {
-    public PowerMACSMessages()
+    /// <summary>
+    /// Template for <see cref="IPowerMACS"/> implementers.
+    /// </summary>
+    internal class PowerMACSMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public PowerMACSMessages() : base()
         {
-          105,
-          new MidCompiledInstance(typeof (Mid0105))
-        },
-        {
-          106,
-          new MidCompiledInstance(typeof (Mid0106))
-        },
-        {
-          107,
-          new MidCompiledInstance(typeof (Mid0107))
-        },
-        {
-          108,
-          new MidCompiledInstance(typeof (Mid0108))
-        },
-        {
-          109,
-          new MidCompiledInstance(typeof (Mid0109))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0105.MID, new MidCompiledInstance(typeof(Mid0105)) },
+                { Mid0106.MID, new MidCompiledInstance(typeof(Mid0106)) },
+                { Mid0107.MID, new MidCompiledInstance(typeof(Mid0107)) },
+                { Mid0108.MID, new MidCompiledInstance(typeof(Mid0108)) },
+                { Mid0109.MID, new MidCompiledInstance(typeof(Mid0109)) }
+            };
         }
-      };
-    }
 
-    public PowerMACSMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public PowerMACSMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public PowerMACSMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public PowerMACSMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 104 && mid < 110;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 104 && mid < 110;
+    }
 }

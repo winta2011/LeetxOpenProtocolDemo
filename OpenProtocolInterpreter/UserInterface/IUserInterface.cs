@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.UserInterface.IUserInterface
-
-namespace OpenProtocolInterpreter.UserInterface
+﻿namespace OpenProtocolInterpreter.UserInterface
 {
-  public interface IUserInterface
-  {
-  }
+    /// <summary>
+    /// User interface message category. Every user interface must implement <see cref="IUserInterface"/>.
+    /// </summary>
+    public interface IUserInterface
+    {
+    }
 }

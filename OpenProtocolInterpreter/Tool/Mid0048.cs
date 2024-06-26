@@ -1,76 +1,59 @@
-﻿
-// Type: OpenProtocolInterpreter.Tool.Mid0048
-using OpenProtocolInterpreter.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-
 
 namespace OpenProtocolInterpreter.Tool
 {
-  public class Mid0048 : Mid, ITool, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private readonly IValueConverter<DateTime> _dateConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 48;
-
-    public PairingStatus PairingStatus
+    /// <summary>
+    /// Tool Pairing status
+    /// <para>This message is sent by the controller in order to report the current status of the tool pairing.</para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0048 : Mid, ITool, IController
     {
-      get
-      {
-        return (PairingStatus) this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public const int MID = 48;
 
-    public DateTime TimeStamp
-    {
-      get
-      {
-        return this.GetField(1, 1).GetValue<DateTime>(new Func<string, DateTime>(this._dateConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 1).SetValue<DateTime>(new Func<char, int, DataField.PaddingOrientations, DateTime, string>(this._dateConverter.Convert), value);
-      }
-    }
-
-    public Mid0048()
-      : base(48, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this._dateConverter = (IValueConverter<DateTime>) new DateConverter();
-    }
-
-    public Mid0048(PairingStatus pairingStatus, DateTime timeStamp)
-      : this()
-    {
-      this.PairingStatus = pairingStatus;
-      this.TimeStamp = timeStamp;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public PairingStatus PairingStatus
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 24, 19)
-          }
+            get => (PairingStatus)GetField(1, DataFields.PairingStatus).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.PairingStatus).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public DateTime TimeStamp
+        {
+            get => GetField(1, DataFields.Timestamp).GetValue(OpenProtocolConvert.ToDateTime);
+            set => GetField(1, DataFields.Timestamp).SetValue(OpenProtocolConvert.ToString, value);
+        }
 
-    public enum DataFields
-    {
-      PAIRING_STATUS,
-      TIMESTAMP,
+        public Mid0048() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+        }
+
+        public Mid0048(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.PairingStatus, 20, 2),
+                                DataField.Timestamp(DataFields.Timestamp, 24)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            PairingStatus,
+            Timestamp
+        }
     }
-  }
 }

@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Communication.ICommunication
-
-namespace OpenProtocolInterpreter.Communication
+﻿namespace OpenProtocolInterpreter.Communication
 {
-  public interface ICommunication
-  {
-  }
+    /// <summary>
+    /// Communication message category. Every communication mid must implement <see cref="ICommunication"/>.
+    /// </summary>
+    public interface ICommunication
+    {
+    }
 }

@@ -1,138 +1,128 @@
-﻿
-// Type: OpenProtocolInterpreter.MultiSpindle.Mid0091
-using OpenProtocolInterpreter.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
+using System.Text;
 
 namespace OpenProtocolInterpreter.MultiSpindle
 {
-  public class Mid0091 : Mid, IMultiSpindle, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private readonly IValueConverter<bool> _boolConverter;
-    private readonly IValueConverter<DateTime> _dateConverter;
-    private readonly IValueConverter<IEnumerable<SpindleStatus>> _spindlesStatusConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 91;
-
-    public int NumberOfSpindles
+    /// <summary>
+    /// Multi-spindle status
+    /// <para>
+    ///      The multi-spindle status is sent after each sync tightening. The multiple status contains the common
+    ///      status of the multiple as well as the individual status of each spindle.
+    /// </para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0092"/> Multi-spindle status acknowledge</para>
+    /// </summary>
+    public class Mid0091 : Mid, IMultiSpindle, IController, IAcknowledgeable<Mid0092>
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 91;
 
-    public int SyncTighteningId
-    {
-      get => this.GetField(1, 1).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 1).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public DateTime Time
-    {
-      get
-      {
-        return this.GetField(1, 2).GetValue<DateTime>(new Func<string, DateTime>(this._dateConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 2).SetValue<DateTime>(new Func<char, int, DataField.PaddingOrientations, DateTime, string>(this._dateConverter.Convert), value);
-      }
-    }
-
-    public bool SyncOverallStatus
-    {
-      get
-      {
-        return this.GetField(1, 3).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 3).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
-
-    public List<SpindleStatus> SpindlesStatus { get; set; }
-
-    public Mid0091()
-      : this(new int?(0))
-    {
-    }
-
-    public Mid0091(int? noAckFlag = 0)
-      : base(91, 1, noAckFlag)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-      this._dateConverter = (IValueConverter<DateTime>) new DateConverter();
-      this._spindlesStatusConverter = (IValueConverter<IEnumerable<SpindleStatus>>) new SpindleStatusConverter(this._intConverter, this._boolConverter);
-      if (this.SpindlesStatus != null)
-        return;
-      this.SpindlesStatus = new List<SpindleStatus>();
-    }
-
-    public Mid0091(
-      int numberOfSpindles,
-      int syncTighteningId,
-      DateTime time,
-      bool syncOverallStatus,
-      IEnumerable<SpindleStatus> spindleStatus,
-      int? noAckFlag = 0)
-      : this(noAckFlag)
-    {
-      this.NumberOfSpindles = numberOfSpindles;
-      this.SyncTighteningId = syncTighteningId;
-      this.Time = time;
-      this.SpindlesStatus = spindleStatus.ToList<SpindleStatus>();
-    }
-
-    public override string Pack()
-    {
-      this.GetField(1, 4).Value = this._spindlesStatusConverter.Convert((IEnumerable<SpindleStatus>) this.SpindlesStatus);
-      return base.Pack();
-    }
-
-    public override Mid Parse(string package)
-    {
-      DataField field = this.GetField(1, 4);
-      field.Size = package.Length - field.Index - 2;
-      base.Parse(package);
-      this.SpindlesStatus = this._spindlesStatusConverter.Convert(field.Value).ToList<SpindleStatus>();
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int NumberOfSpindles
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 24, 5, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(2, 31, 19),
-            new DataField(3, 52, 1),
-            new DataField(4, 55, 5)
-          }
+            get => GetField(1, DataFields.NumberOfSpindles).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.NumberOfSpindles).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public int SyncTighteningId
+        {
+            get => GetField(1, DataFields.SyncTighteningId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.SyncTighteningId).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public DateTime Time
+        {
+            get => GetField(1, DataFields.Time).GetValue(OpenProtocolConvert.ToDateTime);
+            set => GetField(1, DataFields.Time).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public bool SyncOverallStatus
+        {
+            get => GetField(1, DataFields.SyncOverallStatus).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(1, DataFields.SyncOverallStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public List<SpindleStatus> SpindlesStatus { get; set; }
 
-    public enum DataFields
-    {
-      NUMBER_OF_SPINDLES,
-      SYNC_TIGHTENING_ID,
-      TIME,
-      SYNC_OVERALL_STATUS,
-      SPINDLE_STATUS,
+        public Mid0091() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+
+        }
+
+        public Mid0091(Header header) : base(header)
+        {
+            SpindlesStatus ??= [];
+        }
+
+        public override string Pack()
+        {
+            GetField(1, DataFields.SpindleStatus).Value = PackSpindlesStatus();
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            var spindleField = GetField(1, DataFields.SpindleStatus);
+            spindleField.Size = Header.Length - spindleField.Index - 2;
+            base.Parse(package);
+            SpindlesStatus = ParseSpindlesStatus(spindleField.Value);
+            return this;
+        }
+
+        //TODO: move to SpindleStatus class
+        protected virtual string PackSpindlesStatus()
+        {
+            var builder = new StringBuilder();
+            foreach (var spindle in SpindlesStatus)
+                builder.Append(OpenProtocolConvert.ToString('0', 2, PaddingOrientation.LeftPadded, spindle.SpindleNumber) +
+                                OpenProtocolConvert.ToString('0', 2, PaddingOrientation.LeftPadded, spindle.ChannelId) +
+                                OpenProtocolConvert.ToString(spindle.SyncOverallStatus));
+
+            return builder.ToString();
+        }
+
+        protected virtual List<SpindleStatus> ParseSpindlesStatus(string section)
+        {
+            var list = new List<SpindleStatus>();
+            for (int i = 0; i < section.Length; i += 5)
+            {
+                var obj = new SpindleStatus()
+                {
+                    SpindleNumber = OpenProtocolConvert.ToInt32(section.Substring(i, 2)),
+                    ChannelId = OpenProtocolConvert.ToInt32(section.Substring(i + 2, 2)),
+                    SyncOverallStatus = OpenProtocolConvert.ToBoolean(section.Substring(i + 4, 1))
+                };
+
+                list.Add(obj);
+            }
+
+            return list;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.NumberOfSpindles, 20, 2),
+                                DataField.Number(DataFields.SyncTighteningId, 24, 5),
+                                DataField.Timestamp(DataFields.Time, 31),
+                                DataField.Boolean(DataFields.SyncOverallStatus, 52),
+                                new(DataFields.SpindleStatus, 55, 5)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            NumberOfSpindles,
+            SyncTighteningId,
+            Time,
+            SyncOverallStatus,
+            SpindleStatus
+        }
     }
-  }
 }

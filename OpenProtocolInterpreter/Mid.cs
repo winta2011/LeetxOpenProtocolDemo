@@ -1,132 +1,170 @@
-﻿
-// Type: OpenProtocolInterpreter.Mid
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
-
 
 namespace OpenProtocolInterpreter
 {
+    /// <summary>
+    /// Abstract class which every Mid should inherit, containing all of default data, such as <see cref="Header"/> data and methods.
+    /// </summary>
     public abstract class Mid
     {
-        public Dictionary<int, List<DataField>> RevisionsByFields { get; set; }
+        protected const int DEFAULT_REVISION = 1;
 
-        public Mid.Header HeaderData { get; set; }
+        protected Dictionary<int, List<DataField>> RevisionsByFields { get; }
+        public Header Header { get; set; }
 
-        public Mid(Mid.Header header)
+        public Mid(Header header)
         {
-            this.HeaderData = header;
-            this.RevisionsByFields = this.RegisterDatafields();
+            Header = header;
+            RevisionsByFields = new SafeAccessRevisionsFields(RegisterDatafields());
         }
 
-        public Mid(
-          int mid,
-          int revision,
-          int? noAckFlag = null,
-          int? spindleID = null,
-          int? stationID = null,
-          IEnumerable<DataField> usedAs = null)
+        public Mid(int mid, int revision, bool noAckFlag = false) : this(new Header()
         {
-            this.HeaderData = new Mid.Header()
-            {
-                Length = 20,
-                Mid = mid,
-                Revision = revision,
-                NoAckFlag = noAckFlag,
-                SpindleID = spindleID,
-                StationID = stationID,
-                UsedAs = usedAs
-            };
-            this.RevisionsByFields = this.RegisterDatafields();
+            Mid = mid,
+            Revision = revision,
+            NoAckFlag = noAckFlag
+        })
+        {
+
         }
 
-        protected virtual byte[] BuildRawHeader() => this.ToBytes(this.BuildHeader());
+        protected virtual byte[] BuildRawHeader() => ToBytes(BuildHeader());
 
         protected virtual string BuildHeader()
         {
-            if (this.RevisionsByFields.Any<KeyValuePair<int, List<DataField>>>())
+            if (RevisionsByFields.Any())
             {
-                this.HeaderData.Length = 20;
-                for (int key = 1; key <= (this.HeaderData.Revision > 0 ? this.HeaderData.Revision : 1); ++key)
+                Header.Length = 20;
+                for (int i = 1; i <= (Header.Revision > 0 ? Header.Revision : 1); i++)
                 {
-                    foreach (DataField dataField in this.RevisionsByFields[key])
-                        this.HeaderData.Length += (dataField.HasPrefix ? 2 : 0) + dataField.Size;
+                    if (RevisionsByFields.TryGetValue(i, out var dataFields))
+                    {
+                        foreach (var dataField in dataFields)
+                            Header.Length += (dataField.HasPrefix ? 2 : 0) + dataField.Size;
+                    }
                 }
             }
-            return this.HeaderData.ToString();
+            return Header.ToString();
         }
 
         public virtual string Pack()
         {
-            if (!this.RevisionsByFields.Any<KeyValuePair<int, List<DataField>>>())
-                return this.BuildHeader();
-            string str = this.BuildHeader();
+            var header = BuildHeader();
+            if (!RevisionsByFields.Any())
+                return header;
+
+            var builder = new StringBuilder(header);
             int prefixIndex = 1;
-            for (int key = 1; key <= (this.HeaderData.Revision > 0 ? this.HeaderData.Revision : 1); ++key)
-                str += this.Pack(this.RevisionsByFields[key], ref prefixIndex);
-            return str;
+            var revision = (Header.Revision > 0 ? Header.Revision : 1);
+            for (int i = 1; i <= revision; i++)
+            {
+                builder.Append(Pack(i, ref prefixIndex));
+            }
+
+            return builder.ToString();
         }
 
-        public virtual byte[] PackBytes() => Encoding.ASCII.GetBytes(this.Pack());
+        public virtual byte[] PackBytes() => Encoding.ASCII.GetBytes(Pack());
+
+        protected virtual string Pack(int revision, ref int prefixIndex)
+        {
+            if (!RevisionsByFields.TryGetValue(revision, out var dataFields))
+            {
+                return string.Empty;
+            }
+
+            return Pack(dataFields, ref prefixIndex);
+        }
 
         protected virtual string Pack(List<DataField> dataFields, ref int prefixIndex)
         {
-            string str = string.Empty;
-            foreach (DataField dataField in dataFields)
+            var builder = new StringBuilder();
+            foreach (var dataField in dataFields)
             {
                 if (dataField.HasPrefix)
                 {
-                    str = str + prefixIndex.ToString().PadLeft(2, '0') + dataField.Value;
-                    ++prefixIndex;
+                    builder.Append(prefixIndex.ToString("D2"));
+                    prefixIndex++;
                 }
-                else
-                    str += dataField.Value;
+
+                builder.Append(dataField.Value);
             }
-            return str;
+
+            return builder.ToString();
         }
 
-        protected virtual Dictionary<int, List<DataField>> RegisterDatafields()
-        {
-            return new Dictionary<int, List<DataField>>();
-        }
+        protected virtual Dictionary<int, List<DataField>> RegisterDatafields() => new();
 
-        protected virtual Mid.Header ProcessHeader(string package)
+        protected virtual Header ProcessHeader(string package)
         {
-            return new Mid.Header()
+            if (package.Length < 20)
             {
-                Length = Convert.ToInt32(package.Substring(0, 4)),
-                Mid = Convert.ToInt32(package.Substring(4, 4)),
-                Revision = package.Length < 11 || string.IsNullOrWhiteSpace(package.Substring(8, 3)) ? 0 : Convert.ToInt32(package.Substring(8, 3)),
-                NoAckFlag = package.Length < 12 || string.IsNullOrWhiteSpace(package.Substring(11, 1)) ? new int?() : new int?(Convert.ToInt32(package.Substring(11, 1))),
-                StationID = package.Length < 14 || string.IsNullOrWhiteSpace(package.Substring(12, 2)) ? new int?() : new int?(Convert.ToInt32(package.Substring(12, 2))),
-                SpindleID = package.Length < 16 || string.IsNullOrWhiteSpace(package.Substring(14, 2)) ? new int?() : new int?(Convert.ToInt32(package.Substring(14, 2)))
+                package = package.PadRight(20, ' ');
+            }
+
+            static bool IsNotEmptyOrZero(string package, out int value)
+            {
+                value = 0;
+                return !string.IsNullOrWhiteSpace(package) && int.TryParse(package, out value) && value > 0;
+            }
+
+            var header = new Header
+            {
+                Length = int.Parse(package.Substring(0, 4)),
+                Mid = int.Parse(package.Substring(4, 4)),
+                Revision = IsNotEmptyOrZero(package.Substring(8, 3), out var revision) ? revision : 1,
+                NoAckFlag = !string.IsNullOrWhiteSpace(package.Substring(11, 1)),
+                StationId = int.TryParse(package.Substring(12, 2), out var stationId) ? stationId : 1,
+                SpindleId = int.TryParse(package.Substring(14, 2), out var spindleId) ? spindleId : 1,
+                SequenceNumber = IsNotEmptyOrZero(package.Substring(16, 2), out var sequenceNumber) ? sequenceNumber : default(int?),
+                NumberOfMessages = IsNotEmptyOrZero(package.Substring(18, 1), out var numberOfMessages) ? numberOfMessages : default(int?),
+                MessageNumber = IsNotEmptyOrZero(package.Substring(19, 1), out var messageNumber) ? messageNumber : default(int?)
             };
+
+            return header;
         }
 
         public virtual Mid Parse(string package)
         {
-            this.HeaderData = this.ProcessHeader(package);
-            this.ProcessDataFields(package);
+            Header = ProcessHeader(package);
+            ProcessDataFields(package);
             return this;
         }
 
-        public virtual Mid Parse(byte[] package) => this.Parse(this.ToAscii(package));
+        public virtual Mid Parse(byte[] package)
+        {
+            var pack = ToAscii(package);
+            return Parse(pack);
+        }
 
         protected virtual void ProcessDataFields(string package)
         {
-            if (!this.RevisionsByFields.Any<KeyValuePair<int, List<DataField>>>())
+            if (!RevisionsByFields.Any())
                 return;
-            int num = this.HeaderData.Revision > 0 ? this.HeaderData.Revision : 1;
-            for (int key = 1; key <= num; ++key)
-                this.ProcessDataFields(this.RevisionsByFields[key], package);
+
+            int revision = Header.Revision > 0 ? Header.Revision : 1;
+            for (int i = 1; i <= revision; i++)
+            {
+                ProcessDataFields(i, package);
+            }
+        }
+
+        protected virtual void ProcessDataFields(int revision, string package)
+        {
+            if (RevisionsByFields.TryGetValue(revision, out var fields))
+            {
+                ProcessDataFields(fields, package);
+            }
         }
 
         protected virtual void ProcessDataFields(List<DataField> dataFields, string package)
         {
-            foreach (DataField dataField in dataFields)
-                dataField.Value = this.GetValue(dataField, package);
+            foreach (var dataField in dataFields)
+                dataField.Value = GetValue(dataField, package);
         }
 
         protected string GetValue(DataField field, string package)
@@ -135,9 +173,9 @@ namespace OpenProtocolInterpreter
             {
                 return field.HasPrefix ? package.Substring(2 + field.Index, field.Size) : package.Substring(field.Index, field.Size);
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (ArgumentOutOfRangeException)
             {
-                return (string)null;
+                return null;
             }
         }
 
@@ -145,85 +183,39 @@ namespace OpenProtocolInterpreter
         {
             try
             {
-                byte[] numArray = new byte[field.Size];
-                int num = field.HasPrefix ? 2 + field.Index : field.Index;
-                int index1 = 0;
-                for (int index2 = num; index2 < num + field.Size; ++index2)
+                byte[] bytes = new byte[field.Size];
+                var index = field.HasPrefix ? 2 + field.Index : field.Index;
+                int j = 0;
+                for (int i = index; i < index + field.Size; i++)
                 {
-                    numArray[index1] = package[index2];
-                    ++index1;
+                    bytes[j] = package[i];
+                    j++;
                 }
-                return numArray;
+
+                return bytes;
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (ArgumentOutOfRangeException)
             {
-                return (byte[])null;
+                return null;
             }
         }
 
         protected DataField GetField(int revision, int field)
         {
-            return this.RevisionsByFields[revision].FirstOrDefault<DataField>((Func<DataField, bool>)(x => x.Field == field));
-        }
-
-        protected string ToAscii(byte[] bytes) => Encoding.ASCII.GetString(bytes);
-
-        protected byte[] ToBytes(string value) => Encoding.ASCII.GetBytes(value);
-
-        public class Header
-        {
-            public int Length { get; internal set; }
-
-            public int Mid { get; internal set; }
-
-            public int Revision { get; internal set; }
-
-            public int? NoAckFlag { get; set; }
-
-            public int? SpindleID { get; set; }
-
-            public int? StationID { get; set; }
-
-            public IEnumerable<DataField> UsedAs { get; set; }
-
-            public override string ToString()
+            if (!RevisionsByFields.TryGetValue(revision, out var fields))
             {
-                string str1 = string.Empty + this.Length.ToString().PadLeft(4, '0') + this.Mid.ToString().PadLeft(4, '0') + (this.Revision > 0 ? this.Revision.ToString().PadLeft(3, '0') : string.Empty.PadLeft(3, ' ')) + this.NoAckFlag.ToString().PadLeft(1, ' ');
-                int? nullable = this.StationID;
-                string str2;
-                if (!nullable.HasValue)
-                {
-                    nullable = this.StationID;
-                    str2 = nullable.ToString().PadLeft(2, ' ');
-                }
-                else
-                {
-                    nullable = this.StationID;
-                    str2 = nullable.ToString().PadLeft(2, '0');
-                }
-                string str3 = str1 + str2;
-                nullable = this.SpindleID;
-                string str4;
-                if (!nullable.HasValue)
-                {
-                    nullable = this.SpindleID;
-                    str4 = nullable.ToString().PadLeft(2, ' ');
-                }
-                else
-                {
-                    nullable = this.SpindleID;
-                    str4 = nullable.ToString().PadLeft(2, '0');
-                }
-                string str5 = str3 + str4;
-                string str6 = "    ";
-                if (this.UsedAs != null)
-                {
-                    str6 = string.Empty;
-                    foreach (DataField usedA in this.UsedAs)
-                        str6 += usedA.Value.ToString();
-                }
-                return str5 + str6;
+                return DataField.Default;
             }
+
+            return fields.FirstOrDefault(x => x.Field == field) ?? DataField.Default;
         }
+
+        protected DataField GetField<TEnum>(int revision, TEnum field) where TEnum : struct, Enum
+            => GetField(revision, field.GetHashCode());
+
+        protected static string ToAscii(byte[] bytes) => Encoding.ASCII.GetString(bytes);
+
+        protected static byte[] ToBytes(string value) => Encoding.ASCII.GetBytes(value);
+
     }
 }

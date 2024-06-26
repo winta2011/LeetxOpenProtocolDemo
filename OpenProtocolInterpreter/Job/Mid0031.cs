@@ -1,137 +1,130 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.Mid0031
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿using System.Collections.Generic;
+using System.Text;
 
 namespace OpenProtocolInterpreter.Job
 {
-  public class Mid0031 : Mid, IJob, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private JobIdListConverter _jobListConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 31;
-
-    public int TotalJobs
+    /// <summary>
+    /// Job ID upload reply
+    /// <para>
+    ///     The transmission of all the valid Job IDs of the controller. 
+    ///     The data field contains the number of valid Jobs currently present in the controller, and the ID of each Job.
+    /// </para>    
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0031 : Mid, IJob, IController
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      private set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        private int JobSize => Header.Revision > 1 ? 4 : 2;
 
-    public List<int> JobIds { get; set; }
+        public const int MID = 31;
 
-    public Mid0031()
-      : this(1)
-    {
-    }
-
-    public Mid0031(int revision = 1)
-      : base(31, revision)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      if (this.JobIds == null)
-        this.JobIds = new List<int>();
-      this.HandleRevisions();
-    }
-
-    public Mid0031(int totalJobs, IEnumerable<int> jobIds, int revision = 1)
-      : this(revision)
-    {
-      this.TotalJobs = totalJobs;
-      this.JobIds = jobIds.ToList<int>();
-    }
-
-    public override string Pack()
-    {
-      this._jobListConverter = new JobIdListConverter(this._intConverter, this.HeaderData.Revision);
-      this.TotalJobs = this.JobIds.Count;
-      DataField field = this.GetField(1, 1);
-      field.Size = (this.HeaderData.Revision > 1 ? 4 : 2) * this.TotalJobs;
-      field.Value = this._jobListConverter.Convert((IEnumerable<int>) this.JobIds);
-      return base.Pack();
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      this.HandleRevisions();
-      this._jobListConverter = new JobIdListConverter(this._intConverter, this.HeaderData.Revision);
-      DataField field = this.GetField(1, 1);
-      field.Size = package.Length - field.Index;
-      base.Parse(package);
-      this.JobIds = this._jobListConverter.Convert(field.Value).ToList<int>();
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int TotalJobs
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(1, 22, 2, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
-        },
-        {
-          2,
-          new List<DataField>()
+            get => GetField(1, DataFields.NumberOfJobs).GetValue(OpenProtocolConvert.ToInt32);
+            private set => GetField(1, DataFields.NumberOfJobs).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public bool Validate(out IEnumerable<string> errors)
-    {
-      List<string> stringList = new List<string>();
-      if (this.HeaderData.Revision > 1)
-      {
-        if (this.TotalJobs < 0 || this.TotalJobs > 9999)
-          stringList.Add(new ArgumentOutOfRangeException("TotalJobs", "Range: 0000-9999").Message);
-        for (int index = 0; index < this.JobIds.Count; ++index)
+        public List<int> JobIds { get; set; }
+
+        public Mid0031() : this(DEFAULT_REVISION)
         {
-          int jobId = this.JobIds[index];
-          if (jobId < 0 || jobId > 9999)
-            stringList.Add(new ArgumentOutOfRangeException("JobIds", string.Format("Failed at index[{0}] => Range: 0000-9999", (object) index)).Message);
+
         }
-      }
-      else
-      {
-        if (this.TotalJobs < 0 || this.TotalJobs > 99)
-          stringList.Add(new ArgumentOutOfRangeException("TotalJobs", "Range: 00-99").Message);
-        for (int index = 0; index < this.JobIds.Count; ++index)
+
+        public Mid0031(Header header) : base(header)
         {
-          int jobId = this.JobIds[index];
-          if (jobId < 0 || jobId > 99)
-            stringList.Add(new ArgumentOutOfRangeException("JobIds", string.Format("Failed at index[{0}] => Range: 00-99", (object) index)).Message);
+            JobIds ??= [];
+            HandleRevisions();
         }
-      }
-      errors = (IEnumerable<string>) stringList;
-      return errors.Any<string>();
-    }
 
-    private void HandleRevisions()
-    {
-      if (this.HeaderData.Revision > 1)
-      {
-        this.GetField(1, 1).Index = 24;
-        this.GetField(1, 0).Size = 4;
-      }
-      else
-        this.GetField(1, 0).Size = this.GetField(1, 1).Size = 2;
-    }
+        public Mid0031(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+            
+        }
 
-    public enum DataFields
-    {
-      NUMBER_OF_JOBS,
-      EACH_JOB_ID,
+        public override string Pack()
+        {
+            TotalJobs = JobIds.Count;
+
+            var eachJobField = GetField(1, DataFields.EachJobId);
+            eachJobField.Size = JobSize * TotalJobs;
+            eachJobField.Value = PackJobIdList();
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            HandleRevisions();
+
+            var eachJobField = GetField(1, DataFields.EachJobId);
+            eachJobField.Size = Header.Length - eachJobField.Index;
+            base.Parse(package);
+            JobIds = ParseJobIdList(eachJobField.Value);
+            return this;
+        }
+
+
+        protected virtual string PackJobIdList()
+        {
+            var builder = new StringBuilder();
+            foreach (var jobId in JobIds)
+                builder.Append(OpenProtocolConvert.ToString('0', JobSize, PaddingOrientation.LeftPadded, jobId));
+
+            return builder.ToString();
+        }
+
+        protected virtual List<int> ParseJobIdList(string section)
+        {
+            var list = new List<int>();
+            if (string.IsNullOrWhiteSpace(section))
+            {
+                return list;
+            }
+
+            for (int i = 0; i < section.Length; i += JobSize)
+            {
+                list.Add(OpenProtocolConvert.ToInt32(section.Substring(i, JobSize)));
+            }
+
+            return list;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.NumberOfJobs, 20, 2, false),
+                                DataField.Number(DataFields.EachJobId, 22, 2, false)
+                            }
+                },
+            };
+        }
+
+        private void HandleRevisions()
+        {
+            if (Header.Revision > 1)
+            {
+                GetField(1, DataFields.NumberOfJobs).Size = 4;
+                GetField(1, DataFields.EachJobId).Index = 24;
+            }
+            else
+            {
+                GetField(1, DataFields.NumberOfJobs).Size = GetField(1, DataFields.EachJobId).Size = 2;
+            }
+        }
+
+        protected enum DataFields
+        {
+            NumberOfJobs,
+            EachJobId
+        }
     }
-  }
 }

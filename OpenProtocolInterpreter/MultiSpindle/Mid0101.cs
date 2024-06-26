@@ -1,344 +1,279 @@
-﻿
-// Type: OpenProtocolInterpreter.MultiSpindle.Mid0101
-using OpenProtocolInterpreter.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
 
 namespace OpenProtocolInterpreter.MultiSpindle
 {
-  public class Mid0101 : Mid, IMultiSpindle, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private readonly IValueConverter<bool> _boolConverter;
-    private readonly IValueConverter<Decimal> _decimalConverter;
-    private readonly IValueConverter<DateTime> _dateConverter;
-    private readonly IValueConverter<IEnumerable<SpindleOrPressStatus>> _spindleOrPressStatusListConverter;
-    private const int LAST_REVISION = 5;
-    public const int MID = 101;
-
-    public int NumberOfSpindlesOrPresses
+    /// <summary>
+    /// Multi-spindle result
+    /// <para>
+    ///     The multi-spindle result is sent after each sync tightening and if it is subscribed. The multiple results
+    ///     contain the common status of the multiple as well as the individual tightening result(torque and angle)
+    ///     of each spindle.
+    /// </para>
+    /// <para>
+    ///     This telegram is also used for PowerMACS systems running a Press.The layout of the telegram is
+    ///     exactly the same but some of the fields have slightly different definitions.The fields for Torque are
+    ///     used for Force values and the fields for Angle are used for Stroke values. A press system always uses
+    ///     revision 4 or higher of the telegram.
+    /// </para>    
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0102"/> Multi-spindle result acknowledge</para>
+    /// </summary>
+    public class Mid0101 : Mid, IMultiSpindle, IController, IAcknowledgeable<Mid0102>
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 101;
 
-    public string VinNumber
-    {
-      get => this.GetField(1, 1).Value;
-      set => this.GetField(1, 1).SetValue(value);
-    }
-
-    public int JobId
-    {
-      get => this.GetField(1, 2).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 2).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int ParameterSetId
-    {
-      get => this.GetField(1, 3).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 3).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int BatchSize
-    {
-      get => this.GetField(1, 4).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 4).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int BatchCounter
-    {
-      get => this.GetField(1, 5).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 5).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public BatchStatus BatchStatus
-    {
-      get
-      {
-        return (BatchStatus) this.GetField(1, 6).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 6).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
-
-    public Decimal TorqueOrForceMinLimit
-    {
-      get
-      {
-        return this.GetField(1, 7).GetValue<Decimal>(new Func<string, Decimal>(this._decimalConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 7).SetValue<Decimal>(new Func<char, int, DataField.PaddingOrientations, Decimal, string>(this._decimalConverter.Convert), value);
-      }
-    }
-
-    public Decimal TorqueOrForceMaxLimit
-    {
-      get
-      {
-        return this.GetField(1, 8).GetValue<Decimal>(new Func<string, Decimal>(this._decimalConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 8).SetValue<Decimal>(new Func<char, int, DataField.PaddingOrientations, Decimal, string>(this._decimalConverter.Convert), value);
-      }
-    }
-
-    public Decimal TorqueOrForceFinalTarget
-    {
-      get
-      {
-        return this.GetField(1, 9).GetValue<Decimal>(new Func<string, Decimal>(this._decimalConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 9).SetValue<Decimal>(new Func<char, int, DataField.PaddingOrientations, Decimal, string>(this._decimalConverter.Convert), value);
-      }
-    }
-
-    public Decimal AngleOrStrokeMinLimit
-    {
-      get
-      {
-        return this.GetField(1, 10).GetValue<Decimal>(new Func<string, Decimal>(this._decimalConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 10).SetValue<Decimal>(new Func<char, int, DataField.PaddingOrientations, Decimal, string>(this._decimalConverter.Convert), value);
-      }
-    }
-
-    public Decimal AngleOrStrokeMaxLimit
-    {
-      get
-      {
-        return this.GetField(1, 11).GetValue<Decimal>(new Func<string, Decimal>(this._decimalConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 11).SetValue<Decimal>(new Func<char, int, DataField.PaddingOrientations, Decimal, string>(this._decimalConverter.Convert), value);
-      }
-    }
-
-    public Decimal FinalAngleOrStrokeTarget
-    {
-      get
-      {
-        return this.GetField(1, 12).GetValue<Decimal>(new Func<string, Decimal>(this._decimalConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 12).SetValue<Decimal>(new Func<char, int, DataField.PaddingOrientations, Decimal, string>(this._decimalConverter.Convert), value);
-      }
-    }
-
-    public DateTime LastChangeInParameterSet
-    {
-      get
-      {
-        return this.GetField(1, 14).GetValue<DateTime>(new Func<string, DateTime>(this._dateConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 14).SetValue<DateTime>(new Func<char, int, DataField.PaddingOrientations, DateTime, string>(this._dateConverter.Convert), value);
-      }
-    }
-
-    public DateTime TimeStamp
-    {
-      get
-      {
-        return this.GetField(1, 15).GetValue<DateTime>(new Func<string, DateTime>(this._dateConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 15).SetValue<DateTime>(new Func<char, int, DataField.PaddingOrientations, DateTime, string>(this._dateConverter.Convert), value);
-      }
-    }
-
-    public int SyncTighteningId
-    {
-      get => this.GetField(1, 16).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 16).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public bool SyncOverallStatus
-    {
-      get
-      {
-        return this.GetField(1, 17).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 17).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
-
-    public List<SpindleOrPressStatus> SpindlesOrPressesStatus { get; set; }
-
-    public SystemSubType SystemSubType
-    {
-      get
-      {
-        return (SystemSubType) this.GetField(4, 19).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(4, 19).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
-
-    public int JobSequenceNumber
-    {
-      get => this.GetField(5, 20).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(5, 20).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public Mid0101()
-      : this(5)
-    {
-    }
-
-    public Mid0101(int revision = 5)
-      : base(101, revision)
-    {
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this._dateConverter = (IValueConverter<DateTime>) new DateConverter();
-      this._decimalConverter = (IValueConverter<Decimal>) new DecimalTrucatedConverter(2);
-      this._spindleOrPressStatusListConverter = (IValueConverter<IEnumerable<SpindleOrPressStatus>>) new SpindleOrPressStatusListConverter(this._intConverter, this._boolConverter, this._decimalConverter);
-    }
-
-    public override string Pack()
-    {
-      DataField field = this.GetField(1, 18);
-      field.Size = this.SpindlesOrPressesStatus.Count * 18;
-      field.Value = this._spindleOrPressStatusListConverter.Convert((IEnumerable<SpindleOrPressStatus>) this.SpindlesOrPressesStatus);
-      return base.Pack();
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      DataField field1 = this.GetField(1, 0);
-      int num = this._intConverter.Convert(package.Substring(field1.Index + 2, field1.Size));
-      DataField field2 = this.GetField(1, 18);
-      field2.Size = num * 18;
-      if (this.HeaderData.Revision > 3)
-      {
-        DataField field3 = this.GetField(4, 19);
-        field3.Index = field2.Index + field2.Size + 2;
-        if (this.HeaderData.Revision > 4)
-          this.GetField(5, 20).Index = field3.Index + field3.Size + 2;
-      }
-      this.ProcessDataFields(package);
-      this.SpindlesOrPressesStatus = this._spindleOrPressStatusListConverter.Convert(field2.Value).ToList<SpindleOrPressStatus>();
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int NumberOfSpindlesOrPresses
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 24, 25, ' '),
-            new DataField(2, 51, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(3, 55, 3, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(4, 60, 4, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(5, 66, 4, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(6, 72, 1),
-            new DataField(7, 75, 6, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(8, 83, 6, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(9, 91, 6, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(10, 99, 5, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(11, 106, 5, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(12, 113, 5, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(14, 120, 19),
-            new DataField(15, 141, 19),
-            new DataField(16, 162, 5, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(17, 169, 1),
-            new DataField(18, 172, 0)
-          }
-        },
-        {
-          2,
-          new List<DataField>()
-        },
-        {
-          3,
-          new List<DataField>()
-        },
-        {
-          4,
-          new List<DataField>()
-          {
-            new DataField(19, 0, 3, '0', DataField.PaddingOrientations.LEFT_PADDED)
-          }
-        },
-        {
-          5,
-          new List<DataField>()
-          {
-            new DataField(20, 0, 5, '0', DataField.PaddingOrientations.LEFT_PADDED)
-          }
+            get => GetField(1, DataFields.NumberOfSpindlesOrPresses).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.NumberOfSpindlesOrPresses).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public string VinNumber
+        {
+            get => GetField(1, DataFields.VinNumber).Value;
+            set => GetField(1, DataFields.VinNumber).SetValue(value);
+        }
+        public int JobId
+        {
+            get => GetField(1, DataFields.JobId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.JobId).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int ParameterSetId
+        {
+            get => GetField(1, DataFields.ParameterSetId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.ParameterSetId).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int BatchSize
+        {
+            get => GetField(1, DataFields.BatchSize).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.BatchSize).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int BatchCounter
+        {
+            get => GetField(1, DataFields.BatchCounter).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.BatchCounter).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public BatchStatus BatchStatus
+        {
+            get => (BatchStatus)GetField(1, DataFields.BatchStatus).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.BatchStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public decimal TorqueOrForceMinLimit
+        {
+            get => GetField(1, DataFields.TorqueOrForceMinLimit).GetValue(OpenProtocolConvert.ToTruncatedDecimal);
+            set => GetField(1, DataFields.TorqueOrForceMinLimit).SetValue(OpenProtocolConvert.TruncatedDecimalToString, value);
+        }
+        public decimal TorqueOrForceMaxLimit
+        {
+            get => GetField(1, DataFields.TorqueOrForceMaxLimit).GetValue(OpenProtocolConvert.ToTruncatedDecimal);
+            set => GetField(1, DataFields.TorqueOrForceMaxLimit).SetValue(OpenProtocolConvert.TruncatedDecimalToString, value);
+        }
+        public decimal TorqueOrForceFinalTarget
+        {
+            get => GetField(1, DataFields.TorqueOrForceFinalTarget).GetValue(OpenProtocolConvert.ToTruncatedDecimal);
+            set => GetField(1, DataFields.TorqueOrForceFinalTarget).SetValue(OpenProtocolConvert.TruncatedDecimalToString, value);
+        }
+        public decimal AngleOrStrokeMinLimit
+        {
+            get => GetField(1, DataFields.AngleOrStrokeMinLimit).GetValue(OpenProtocolConvert.ToTruncatedDecimal);
+            set => GetField(1, DataFields.AngleOrStrokeMinLimit).SetValue(OpenProtocolConvert.TruncatedDecimalToString, value);
+        }
+        public decimal AngleOrStrokeMaxLimit
+        {
+            get => GetField(1, DataFields.AngleOrStrokeMaxLimit).GetValue(OpenProtocolConvert.ToTruncatedDecimal);
+            set => GetField(1, DataFields.AngleOrStrokeMaxLimit).SetValue(OpenProtocolConvert.TruncatedDecimalToString, value);
+        }
+        public decimal FinalAngleOrStrokeTarget
+        {
+            get => GetField(1, DataFields.FinalAngleOrStrokeTarget).GetValue(OpenProtocolConvert.ToTruncatedDecimal);
+            set => GetField(1, DataFields.FinalAngleOrStrokeTarget).SetValue(OpenProtocolConvert.TruncatedDecimalToString, value);
+        }
+        public DateTime LastChangeInParameterSet
+        {
+            get => GetField(1, DataFields.LastChangeInParameterSet).GetValue(OpenProtocolConvert.ToDateTime);
+            set => GetField(1, DataFields.LastChangeInParameterSet).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public DateTime TimeStamp
+        {
+            get => GetField(1, DataFields.Timestamp).GetValue(OpenProtocolConvert.ToDateTime);
+            set => GetField(1, DataFields.Timestamp).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int SyncTighteningId
+        {
+            get => GetField(1, DataFields.SyncTighteningId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.SyncTighteningId).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public bool SyncOverallStatus
+        {
+            get => GetField(1, DataFields.SyncOverallStatus).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(1, DataFields.SyncOverallStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public List<SpindleOrPressStatus> SpindlesOrPressesStatus { get; set; }
+        public SystemSubType SystemSubType
+        {
+            get => (SystemSubType)GetField(4, DataFields.SystemSubType).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(4, DataFields.SystemSubType).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int JobSequenceNumber
+        {
+            get => GetField(5, DataFields.JobSequenceNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(5, DataFields.JobSequenceNumber).SetValue(OpenProtocolConvert.ToString, value);
+        }
 
-    public enum DataFields
-    {
-      NUMBER_OF_SPINDLES_OR_PRESSES,
-      VIN_NUMBER,
-      JOB_ID,
-      PARAMETER_SET_ID,
-      BATCH_SIZE,
-      BATCH_COUNTER,
-      BATCH_STATUS,
-      TORQUE_OR_FORCE_MIN_LIMIT,
-      TORQUE_OR_FORCE_MAX_LIMIT,
-      TORQUE_OR_FORCE_FINAL_TARGET,
-      ANGLE_OR_STROKE_MIN_LIMIT,
-      ANGLE_OR_STROKE_MAX_LIMIT,
-      FINAL_ANGLE_OR_STROKE_TARGET,
-      TARGET,
-      LAST_CHANGE_IN_PARAMETER_SET,
-      TIMESTAMP,
-      SYNC_TIGHTENING_ID,
-      SYNC_OVERALL_STATUS,
-      SPINDLES_OR_PRESSES_STATUS,
-      SYSTEM_SUB_TYPE,
-      JOB_SEQUENCE_NUMBER,
+        public Mid0101() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0101(Header header) : base(header)
+        {
+
+        }
+
+        public Mid0101(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+        }
+
+        public override string Pack()
+        {
+            var spindesOrPressesStatusField = GetField(1, DataFields.SpindesOrPressesStatus);
+            spindesOrPressesStatusField.Size = SpindlesOrPressesStatus.Count * 18;
+            spindesOrPressesStatusField.Value = PackSpindlesOrPressesStatus();
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            var spindleOrPressesField = GetField(1, DataFields.NumberOfSpindlesOrPresses);
+            int spindleOrPresses = OpenProtocolConvert.ToInt32(package.Substring(spindleOrPressesField.Index + 2, spindleOrPressesField.Size));
+            var spindesOrPressesStatusField = GetField(1, DataFields.SpindesOrPressesStatus);
+            spindesOrPressesStatusField.Size = spindleOrPresses * 18;
+            if(Header.Revision > 3)
+            {
+                var systemSubTypeField = GetField(4, DataFields.SystemSubType);
+                systemSubTypeField.Index = spindesOrPressesStatusField.Index + spindesOrPressesStatusField.Size + 2;
+                if(Header.Revision > 4)
+                {
+                    GetField(5, DataFields.JobSequenceNumber).Index = systemSubTypeField.Index + systemSubTypeField.Size + 2;
+                }
+            }
+            ProcessDataFields(package);
+            SpindlesOrPressesStatus = ParseSpindlesOrPressesStatus(spindesOrPressesStatusField.Value);
+            return this;
+        }
+
+        //TODO: move to SpindleOrPressStatus class
+        protected virtual string PackSpindlesOrPressesStatus()
+        {
+            string package = string.Empty;
+            foreach (var v in SpindlesOrPressesStatus)
+            {
+                package += OpenProtocolConvert.ToString('0', 2, PaddingOrientation.LeftPadded, v.SpindleOrPressNumber) +
+                           OpenProtocolConvert.ToString('0', 2, PaddingOrientation.LeftPadded, v.ChannelId) +
+                           OpenProtocolConvert.ToString(v.OverallStatus) +
+                           OpenProtocolConvert.ToString(v.TorqueOrForceStatus) +
+                           OpenProtocolConvert.TruncatedDecimalToString('0', 6, PaddingOrientation.LeftPadded, v.TorqueOrForce) +
+                           OpenProtocolConvert.ToString(v.AngleOrStrokeStatus) +
+                           OpenProtocolConvert.ToString('0', 5, PaddingOrientation.LeftPadded, v.AngleOrStroke);
+            }
+
+            return package;
+        }
+
+        protected virtual List<SpindleOrPressStatus> ParseSpindlesOrPressesStatus(string section)
+        {
+            var list = new List<SpindleOrPressStatus>();
+            for (int i = 0; i < section.Length; i += 18)
+            {
+                var spindleValue = section.Substring(i, 18);
+                var obj = new SpindleOrPressStatus()
+                {
+                    SpindleOrPressNumber = OpenProtocolConvert.ToInt32(spindleValue.Substring(0, 2)),
+                    ChannelId = OpenProtocolConvert.ToInt32(spindleValue.Substring(2, 2)),
+                    OverallStatus = OpenProtocolConvert.ToBoolean(spindleValue.Substring(4, 1)),
+                    TorqueOrForceStatus = (TighteningValueStatus)OpenProtocolConvert.ToInt32(spindleValue.Substring(5, 1)),
+                    TorqueOrForce = OpenProtocolConvert.ToTruncatedDecimal(spindleValue.Substring(6, 6)),
+                    AngleOrStrokeStatus = OpenProtocolConvert.ToBoolean(spindleValue.Substring(12, 1)),
+                    AngleOrStroke = OpenProtocolConvert.ToInt32(spindleValue.Substring(13, 5))
+                };
+                list.Add(obj);
+            }
+
+            return list;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.NumberOfSpindlesOrPresses, 20, 2),
+                                DataField.String(DataFields.VinNumber, 24, 25),
+                                DataField.Number(DataFields.JobId, 51, 2),
+                                DataField.Number(DataFields.ParameterSetId, 55, 3),
+                                DataField.Number(DataFields.BatchSize, 60, 4),
+                                DataField.Number(DataFields.BatchCounter, 66, 4),
+                                DataField.Number(DataFields.BatchStatus, 72, 1),
+                                DataField.Number(DataFields.TorqueOrForceMinLimit, 75, 6),
+                                DataField.Number(DataFields.TorqueOrForceMaxLimit, 83, 6),
+                                DataField.Number(DataFields.TorqueOrForceFinalTarget, 91, 6),
+                                DataField.Number(DataFields.AngleOrStrokeMinLimit, 99, 5),
+                                DataField.Number(DataFields.AngleOrStrokeMaxLimit, 106, 5),
+                                DataField.Number(DataFields.FinalAngleOrStrokeTarget, 113, 5),
+                                DataField.Timestamp(DataFields.LastChangeInParameterSet, 120),
+                                DataField.Timestamp(DataFields.Timestamp, 141),
+                                DataField.Number(DataFields.SyncTighteningId, 162, 5),
+                                DataField.Boolean(DataFields.SyncOverallStatus, 169),
+                                DataField.Volatile(DataFields.SpindesOrPressesStatus, 172)
+                            }
+                },
+                {
+                    4, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.SystemSubType, 0, 3)
+                            }
+                },
+                {
+                    5, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.JobSequenceNumber, 0, 5)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            NumberOfSpindlesOrPresses,
+            VinNumber,
+            JobId,
+            ParameterSetId,
+            BatchSize,
+            BatchCounter,
+            BatchStatus,
+            TorqueOrForceMinLimit,
+            TorqueOrForceMaxLimit,
+            TorqueOrForceFinalTarget,
+            AngleOrStrokeMinLimit,
+            AngleOrStrokeMaxLimit,
+            FinalAngleOrStrokeTarget,
+            Target,
+            LastChangeInParameterSet,
+            Timestamp,
+            SyncTighteningId,
+            SyncOverallStatus,
+            SpindesOrPressesStatus,
+            //Rev 4
+            SystemSubType,
+            //Rev 5
+            JobSequenceNumber
+        }
     }
-  }
 }

@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Alarm.IAlarm
-
-namespace OpenProtocolInterpreter.Alarm
+﻿namespace OpenProtocolInterpreter.Alarm
 {
-  public interface IAlarm
-  {
-  }
+    /// <summary>
+    /// Alarm message category. Every alarm mid must implement <see cref="IAlarm"/>.
+    /// </summary>
+    public interface IAlarm
+    {
+    }
 }

@@ -1,21 +1,41 @@
-﻿
-// Type: OpenProtocolInterpreter.ParameterSet.Mid0014
-
-namespace OpenProtocolInterpreter.ParameterSet
+﻿namespace OpenProtocolInterpreter.ParameterSet
 {
-  public class Mid0014 : Mid, IParameterSet, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 14;
-
-    public Mid0014()
-      : this(new int?(0))
+    /// <summary>
+    /// Parameter set selected subscribe
+    /// <para>
+    ///     A subscription for the parameter set selection. Each time a new parameter set is selected the <see cref="Mid0015"/>
+    ///     Parameter set selected is sent to the integrator.
+    /// </para>
+    /// <para>
+    ///     Note that the immediate response is <see cref="Communication.Mid0005"/> Command
+    ///     accepted and <see cref="Mid0015"/> Parameter set selected with the current parameter set number selected.
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted and <see cref="Mid0015"/> Parameter set selected</para>
+    /// </summary>
+    public class Mid0014 : Mid, IParameterSet, IIntegrator, ISubscription, IAcceptableCommand, IAnswerableBy<Mid0015>
     {
-    }
+        public const int MID = 14;
 
-    public Mid0014(int? noAckFlag = 0)
-      : base(14, 1, noAckFlag)
-    {
+        public Mid0014() : this(false)
+        {
+
+        }
+
+        /// <summary>
+        /// Revision 1 Constructor
+        /// </summary>
+        /// <param name="noAckFlag">False=Ack needed, True=No Ack needed</param>
+        public Mid0014(bool noAckFlag = false) : base(MID, DEFAULT_REVISION, noAckFlag) 
+        { 
+        
+        }
+        public Mid0014(int rev) : base(MID, rev, false)
+        {
+
+        }
+        public Mid0014(Header header) : base(header)
+        {
+        }
     }
-  }
 }

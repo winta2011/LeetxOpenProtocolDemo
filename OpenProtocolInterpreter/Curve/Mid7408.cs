@@ -9,12 +9,12 @@ namespace OpenProtocolInterpreter.Curve
     public const int MID = 7408;
 
     public Mid7408()
-      : this(2, new int?(0))
+      : this(2, 0)
     {
     }
 
-    public Mid7408(int revision = 2, int? noAckFlag = 0)
-      : base(7408, revision, noAckFlag)
+    public Mid7408(int revision = 2, int noAckFlag = 0)
+      : base(7408, revision, noAckFlag==1)
     {
     }
   }

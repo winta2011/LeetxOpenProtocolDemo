@@ -1,16 +1,20 @@
-﻿
-// Type: OpenProtocolInterpreter.Result.Mid1203
-
-namespace OpenProtocolInterpreter.Result
+﻿namespace OpenProtocolInterpreter.Result
 {
-  public class Mid1203 : Mid, IResult, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 1203;
-
-    public Mid1203()
-      : base(1203, 1)
+    /// <summary>
+    /// Operation result data acknowledge
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid1203 : Mid, IResult, IIntegrator, IAcknowledge
     {
+        public const int MID = 1203;
+
+        public Mid1203() : base(MID, DEFAULT_REVISION)
+        {
+        }
+
+        public Mid1203(Header header) : base(header)
+        {
+        }
     }
-  }
 }

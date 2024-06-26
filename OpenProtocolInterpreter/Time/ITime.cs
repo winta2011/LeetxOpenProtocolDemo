@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Time.ITime
-
-namespace OpenProtocolInterpreter.Time
+﻿namespace OpenProtocolInterpreter.Time
 {
-  public interface ITime
-  {
-  }
+    /// <summary>
+    /// Time message category. Every time mid must implement <see cref="ITime"/>.
+    /// </summary>
+    public interface ITime
+    {
+    }
 }

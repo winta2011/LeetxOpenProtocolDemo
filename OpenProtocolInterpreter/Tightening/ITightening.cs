@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Tightening.ITightening
-
-namespace OpenProtocolInterpreter.Tightening
+﻿namespace OpenProtocolInterpreter.Tightening
 {
-  public interface ITightening
-  {
-  }
+    /// <summary>
+    /// Tightening message category. Every tightening mid must implement <see cref="ITightening"/>.
+    /// </summary>
+    public interface ITightening
+    {
+    }
 }

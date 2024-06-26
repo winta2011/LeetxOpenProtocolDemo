@@ -1,73 +1,85 @@
-﻿
-// Type: OpenProtocolInterpreter.MultipleIdentifiers.Mid0152
-using OpenProtocolInterpreter.Converters;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.MultipleIdentifiers
 {
-  public class Mid0152 : Mid, IMultipleIdentifier, IController
-  {
-    private readonly IValueConverter<IdentifierStatus> _identifierStatusConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 152;
-
-    public IdentifierStatus FirstIdentifierStatus { get; set; }
-
-    public IdentifierStatus SecondIdentifierStatus { get; set; }
-
-    public IdentifierStatus ThirdIdentifierStatus { get; set; }
-
-    public IdentifierStatus FourthIdentifierStatus { get; set; }
-
-    public Mid0152()
-      : base(152, 1)
+    /// <summary>
+    /// Multiple identifier and result parts
+    /// <para>
+    ///    Transmission of the work order status, optional identifier and identifier result parts
+    ///    by the controller to the subscriber.
+    /// </para>
+    /// <para>
+    ///    The identifier contains the status of the maximum four identifier result parts that could 
+    ///    be extracted from one or more valid identifiers.
+    /// </para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0153"/> Multiple identifiers and result parts acknowledge</para>
+    /// </summary>
+    public class Mid0152 : Mid, IMultipleIdentifier, IController, IAcknowledgeable<Mid0153>
     {
-      this._identifierStatusConverter = (IValueConverter<IdentifierStatus>) new IdentifierStatusConverter((IValueConverter<int>) new Int32Converter(), (IValueConverter<bool>) new BoolConverter());
-    }
+        public const int MID = 152;
 
-    public override string Pack()
-    {
-      this.GetField(1, 0).Value = this._identifierStatusConverter.Convert(this.FirstIdentifierStatus);
-      this.GetField(1, 1).Value = this._identifierStatusConverter.Convert(this.SecondIdentifierStatus);
-      this.GetField(1, 2).Value = this._identifierStatusConverter.Convert(this.ThirdIdentifierStatus);
-      this.GetField(1, 3).Value = this._identifierStatusConverter.Convert(this.FourthIdentifierStatus);
-      return base.Pack();
-    }
+        public IdentifierStatus FirstIdentifierStatus { get; set; }
+        public IdentifierStatus SecondIdentifierStatus { get; set; }
+        public IdentifierStatus ThirdIdentifierStatus { get; set; }
+        public IdentifierStatus FourthIdentifierStatus { get; set; }
 
-    public override Mid Parse(string package)
-    {
-      base.Parse(package);
-      this.FirstIdentifierStatus = this._identifierStatusConverter.Convert(this.GetField(1, 0).Value);
-      this.SecondIdentifierStatus = this._identifierStatusConverter.Convert(this.GetField(1, 1).Value);
-      this.ThirdIdentifierStatus = this._identifierStatusConverter.Convert(this.GetField(1, 2).Value);
-      this.FourthIdentifierStatus = this._identifierStatusConverter.Convert(this.GetField(1, 3).Value);
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public Mid0152() : this(new Header()
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 30),
-            new DataField(1, 52, 30),
-            new DataField(2, 84, 30),
-            new DataField(3, 116, 30)
-          }
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      FIRST_IDENTIFIER_STATUS,
-      SECOND_IDENTIFIER_STATUS,
-      THIRD_IDENTIFIER_STATUS,
-      FOURTH_IDENTIFIER_STATUS,
+        public Mid0152(Header header) : base(header)
+        {
+            
+        }
+
+        public override string Pack()
+        {
+            GetField(1, DataFields.FirstIdentifierStatus).Value = FirstIdentifierStatus.Pack();
+            GetField(1, DataFields.SecondIdentifierStatus).Value = SecondIdentifierStatus.Pack();
+            GetField(1, DataFields.ThirdIdentifierStatus).Value = ThirdIdentifierStatus.Pack();
+            GetField(1, DataFields.FourthIdentifierStatus).Value = FourthIdentifierStatus.Pack();
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            base.Parse(package);
+
+            FirstIdentifierStatus = IdentifierStatus.Parse(GetField(1, DataFields.FirstIdentifierStatus).Value);
+            SecondIdentifierStatus = IdentifierStatus.Parse(GetField(1, DataFields.SecondIdentifierStatus).Value);
+            ThirdIdentifierStatus = IdentifierStatus.Parse(GetField(1, DataFields.ThirdIdentifierStatus).Value);
+            FourthIdentifierStatus = IdentifierStatus.Parse(GetField(1, DataFields.FourthIdentifierStatus).Value);
+
+            return this;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                new(DataFields.FirstIdentifierStatus, 20, 30),
+                                new(DataFields.SecondIdentifierStatus, 52, 30),
+                                new(DataFields.ThirdIdentifierStatus, 84, 30),
+                                new(DataFields.FourthIdentifierStatus, 116, 30)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            FirstIdentifierStatus,
+            SecondIdentifierStatus,
+            ThirdIdentifierStatus,
+            FourthIdentifierStatus
+        }
     }
-  }
 }

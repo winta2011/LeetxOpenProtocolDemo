@@ -1,69 +1,40 @@
-﻿
-// Type: OpenProtocolInterpreter.Alarm.AlarmMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.Alarm
 {
-  internal class AlarmMessages : MessagesTemplate
-  {
-    public AlarmMessages()
+    /// <summary>
+    /// Template for <see cref="IAlarm"/> implementers.
+    /// </summary>
+    internal class AlarmMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public AlarmMessages() : base()
         {
-          70,
-          new MidCompiledInstance(typeof (Mid0070))
-        },
-        {
-          71,
-          new MidCompiledInstance(typeof (Mid0071))
-        },
-        {
-          72,
-          new MidCompiledInstance(typeof (Mid0072))
-        },
-        {
-          73,
-          new MidCompiledInstance(typeof (Mid0073))
-        },
-        {
-          74,
-          new MidCompiledInstance(typeof (Mid0074))
-        },
-        {
-          75,
-          new MidCompiledInstance(typeof (Mid0075))
-        },
-        {
-          76,
-          new MidCompiledInstance(typeof (Mid0076))
-        },
-        {
-          77,
-          new MidCompiledInstance(typeof (Mid0077))
-        },
-        {
-          78,
-          new MidCompiledInstance(typeof (Mid0078))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+               { Mid0070.MID,  new MidCompiledInstance(typeof(Mid0070)) },
+               { Mid0071.MID,  new MidCompiledInstance(typeof(Mid0071)) },
+               { Mid0072.MID,  new MidCompiledInstance(typeof(Mid0072)) },
+               { Mid0073.MID,  new MidCompiledInstance(typeof(Mid0073)) },
+               { Mid0074.MID,  new MidCompiledInstance(typeof(Mid0074)) },
+               { Mid0075.MID,  new MidCompiledInstance(typeof(Mid0075)) },
+               { Mid0076.MID,  new MidCompiledInstance(typeof(Mid0076)) },
+               { Mid0077.MID,  new MidCompiledInstance(typeof(Mid0077)) },
+               { Mid0078.MID,  new MidCompiledInstance(typeof(Mid0078)) },
+            };
         }
-      };
-    }
 
-    public AlarmMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public AlarmMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public AlarmMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public AlarmMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 69 && mid < 79;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 69 && mid < 79;
+    }
 }

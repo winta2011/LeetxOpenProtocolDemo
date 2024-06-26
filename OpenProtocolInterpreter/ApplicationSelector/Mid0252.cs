@@ -1,16 +1,20 @@
-﻿
-// Type: OpenProtocolInterpreter.ApplicationSelector.Mid0252
-
-namespace OpenProtocolInterpreter.ApplicationSelector
+﻿namespace OpenProtocolInterpreter.ApplicationSelector
 {
-  public class Mid0252 : Mid, IApplicationSelector, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 252;
-
-    public Mid0252()
-      : base(252, 1)
+    /// <summary>
+    /// Selector socket info acknowledge
+    /// <para>Acknowledgement of the <see cref="Mid0251"/> Selector socket info.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0252 : Mid, IApplicationSelector, IIntegrator, IAcknowledge
     {
+        public const int MID = 252;
+        
+        public Mid0252() : base(MID, DEFAULT_REVISION) { }
+
+        public Mid0252(Header header) : base(header)
+        {
+
+        }
     }
-  }
 }

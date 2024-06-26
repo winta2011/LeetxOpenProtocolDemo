@@ -1,61 +1,59 @@
-﻿
-// Type: OpenProtocolInterpreter.AutomaticManualMode.Mid0401
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.AutomaticManualMode
 {
-  public class Mid0401 : Mid, IAutomaticManualMode, IController
-  {
-    private readonly IValueConverter<bool> _boolConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 401;
-
-    public bool ManualAutomaticMode
+    /// <summary>
+    /// Automatic/Manual mode
+    /// <para>
+    ///     The operation mode in the controller has changed. 
+    ///     The message includes the new operational mode of the controller.
+    /// </para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0402"/> Automatic/Manual mode acknowledge</para>
+    /// </summary>
+    public class Mid0401 : Mid, IAutomaticManualMode, IController, IAcknowledgeable<Mid0402>
     {
-      get
-      {
-        return this.GetField(1, 0).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
+        public const int MID = 401;
 
-    public Mid0401()
-      : this(new int?(0))
-    {
-    }
-
-    public Mid0401(int? noAckFlag = 0)
-      : base(401, 1, noAckFlag)
-    {
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-    }
-
-    public Mid0401(bool manualAutomaticMode, int? noAckFlag = 0)
-      : this(noAckFlag)
-    {
-      this.ManualAutomaticMode = manualAutomaticMode;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        /// <summary>
+        /// <para>Automatic Mode = false (0)</para>
+        /// <para>Manual Mode = true (1)</para>
+        /// </summary>
+        public bool ManualAutomaticMode
         {
-          1,
-          new List<DataField>() { new DataField(0, 20, 1, false) }
+            get => GetField(1, DataFields.ManualAutomaticMode).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(1, DataFields.ManualAutomaticMode).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      MANUAL_AUTOMATIC_MODE,
+        public Mid0401() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION,
+        })
+        {
+
+        }
+
+        public Mid0401(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Boolean(DataFields.ManualAutomaticMode, 20, false)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            ManualAutomaticMode
+        }
     }
-  }
 }

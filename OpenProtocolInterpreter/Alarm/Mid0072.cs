@@ -1,21 +1,29 @@
-﻿
-// Type: OpenProtocolInterpreter.Alarm.Mid0072
-
-namespace OpenProtocolInterpreter.Alarm
+﻿namespace OpenProtocolInterpreter.Alarm
 {
-  public class Mid0072 : Mid, IAlarm, IIntegrator
-  {
-    private const int LAST_REVISION = 2;
-    public const int MID = 72;
-
-    public Mid0072()
-      : this(2)
+    /// <summary>
+    /// Alarm acknowledge
+    /// <para>Acknowledgement for <see cref="Mid0071"/> Alarm.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0072 : Mid, IAlarm, IIntegrator, IAcknowledge
     {
-    }
+        public const int MID = 72;
 
-    public Mid0072(int revision = 2)
-      : base(72, revision)
-    {
+        public Mid0072() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0072(Header header) : base(header)
+        {
+
+        }
+
+        public Mid0072(int revision) : base(MID, revision)
+        {
+
+        }
+
     }
-  }
 }

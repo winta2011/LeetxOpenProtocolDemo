@@ -1,16 +1,19 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.Advanced.Mid0132
-
-namespace OpenProtocolInterpreter.Job.Advanced
+﻿namespace OpenProtocolInterpreter.Job.Advanced
 {
-  public class Mid0132 : Mid, IAdvancedJob, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 132;
-
-    public Mid0132()
-      : base(132, 1)
+    /// <summary>
+    /// Set Job line alert 1
+    /// <para>The integrator can set the line control alert 1 in the controller with this message.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted</para>
+    /// </summary>
+    public class Mid0132 : Mid, IAdvancedJob, IIntegrator, IAcceptableCommand
     {
+        public const int MID = 132;
+
+        public Mid0132() : base(MID, DEFAULT_REVISION) { }
+
+        public Mid0132(Header header) : base(header)
+        {
+        }
     }
-  }
 }

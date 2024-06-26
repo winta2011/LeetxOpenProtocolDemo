@@ -1,68 +1,62 @@
-﻿
-// Type: OpenProtocolInterpreter.ApplicationToolLocationSystem.Mid0265
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.ApplicationToolLocationSystem
 {
-  public class Mid0265 : Mid, IApplicationToolLocationSystem, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 265;
-
-    public string ToolTagId
+    /// <summary>
+    /// External Tool tag ID and status
+    /// <para>Used by the controller to detect a Tool tag ID with its status from the integrator.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted or <see cref="Communication.Mid0004"/> Command error, MID revision unsupported.</para>
+    /// </summary>
+    public class Mid0265 : Mid, IApplicationToolLocationSystem, IIntegrator, IAcceptableCommand, IDeclinableCommand
     {
-      get => this.GetField(1, 0).Value;
-      set => this.GetField(1, 0).SetValue(value);
-    }
+        public const int MID = 265;
 
-    public ToolStatus ToolStatus
-    {
-      get
-      {
-        return (ToolStatus) this.GetField(1, 1).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 1).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.MidRevisionUnsupported };
 
-    public Mid0265()
-      : base(265, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0265(string toolTagId, ToolStatus toolStatus)
-      : this()
-    {
-      this.ToolTagId = toolTagId;
-      this.ToolStatus = toolStatus;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public string ToolTagId
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 8),
-            new DataField(1, 30, 2, '0', DataField.PaddingOrientations.LEFT_PADDED)
-          }
+            get => GetField(1, DataFields.ToolTagId).Value;
+            set => GetField(1, DataFields.ToolTagId).SetValue(value);
         }
-      };
-    }
+        public ToolStatus ToolStatus
+        {
+            get => (ToolStatus)GetField(1, DataFields.ToolStatus).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.ToolStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
 
-    public enum DataFields
-    {
-      TOOL_TAG_ID,
-      TOOL_STATUS,
+        public Mid0265() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+
+        }
+
+        public Mid0265(Header header) : base(header)
+        {
+
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                       DataField.String(DataFields.ToolTagId, 20, 8),
+                       DataField.Number(DataFields.ToolStatus, 30, 2)
+                    }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            ToolTagId,
+            ToolStatus
+        }
     }
-  }
 }

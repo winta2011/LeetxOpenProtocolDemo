@@ -1,101 +1,76 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.Mid0032
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Job
 {
-  public class Mid0032 : Mid, IJob, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 3;
-    public const int MID = 32;
-
-    public int JobId
+    /// <summary>
+    /// Job data upload request
+    /// <para>Request to upload the data for a specific Job from the controller.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Mid0033"/> Job data upload or <see cref="Communication.Mid0004"/> Command error, Job ID not present</para>
+    /// </summary>
+    public class Mid0032 : Mid, IJob, IIntegrator, IAnswerableBy<Mid0033>, IDeclinableCommand
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 32;
 
-    public Mid0032()
-      : this(3)
-    {
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.JobIdNotPresent };
 
-    public Mid0032(int revision = 3)
-      : base(32, revision)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this.HandleRevision();
-    }
-
-    public Mid0032(int jobId, int revision = 2)
-      : this(revision)
-    {
-      this.JobId = jobId;
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      this.HandleRevision();
-      this.ProcessDataFields(package);
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int JobId
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
-        },
-        {
-          2,
-          new List<DataField>()
-        },
-        {
-          3,
-          new List<DataField>()
+            get => GetField(1, DataFields.JobId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.JobId).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public bool Validate(out IEnumerable<string> errors)
-    {
-      List<string> stringList = new List<string>();
-      if (this.HeaderData.Revision == 1)
-      {
-        if (this.JobId < 0 || this.JobId > 99)
-          stringList.Add(new ArgumentOutOfRangeException("JobId", "Range: 00-99").Message);
-      }
-      else if (this.JobId < 0 || this.JobId > 9999)
-        stringList.Add(new ArgumentOutOfRangeException("JobId", "Range: 0000-9999").Message);
-      errors = (IEnumerable<string>) stringList;
-      return errors.Any<string>();
-    }
+        public Mid0032() : this(DEFAULT_REVISION)
+        {
 
-    private void HandleRevision()
-    {
-      if (this.HeaderData.Revision == 1)
-        this.GetField(1, 0).Size = 2;
-      else
-        this.GetField(1, 0).Size = 4;
-    }
+        }
 
-    public enum DataFields
-    {
-      JOB_ID,
+        public Mid0032(Header header) : base(header)
+        {
+            HandleRevision();
+        }
+
+        public Mid0032(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            HandleRevision();
+            ProcessDataFields(package);
+            return this;
+        }
+
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.JobId, 20, 2, false),
+                            }
+                }
+            };
+        }
+
+        private void HandleRevision()
+        {
+            if (Header.Revision == 1)
+                GetField(1, DataFields.JobId).Size = 2;
+            else
+                GetField(1, DataFields.JobId).Size = 4;
+        }
+
+        protected enum DataFields
+        {
+            JobId
+        }
     }
-  }
 }

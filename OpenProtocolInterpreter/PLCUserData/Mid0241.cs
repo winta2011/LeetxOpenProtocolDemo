@@ -1,21 +1,37 @@
-﻿
-// Type: OpenProtocolInterpreter.PLCUserData.Mid0241
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.PLCUserData
 {
-  public class Mid0241 : Mid, IPLCUserData, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 241;
-
-    public Mid0241()
-      : this(new int?(0))
+    /// <summary>
+    /// User data subscribe
+    /// <para>
+    ///     Subscribe for user data. This command will activate the <see cref="Mid0242"/> User data message to be sent when a
+    ///     change in the user data output has been detected.
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or
+    ///         <see cref="Communication.Mid0004"/> Command error, Subscription already exists, or
+    ///         Controller is not a sync master/station controller
+    /// </para>
+    /// </summary>
+    public class Mid0241 : Mid, IPLCUserData, IIntegrator, ISubscription, IAcceptableCommand, IDeclinableCommand
     {
-    }
+        public const int MID = 241;
 
-    public Mid0241(int? noAckFlag = 0)
-      : base(241, 1, noAckFlag)
-    {
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.SubscriptionAlreadyExists, Error.ControllerIsNotASyncMasterOrStationController };
+
+        public Mid0241() : this(false)
+        {
+
+        }
+
+        public Mid0241(bool noAckFlag = false) : base(MID, DEFAULT_REVISION, noAckFlag) 
+        { 
+        }
+
+        public Mid0241(Header header) : base(header)
+        {
+        }
     }
-  }
 }

@@ -1,21 +1,24 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.Mid0036
-
-namespace OpenProtocolInterpreter.Job
+﻿namespace OpenProtocolInterpreter.Job
 {
-  public class Mid0036 : Mid, IJob, IIntegrator
-  {
-    private const int LAST_REVISION = 4;
-    public const int MID = 36;
-
-    public Mid0036()
-      : this(4)
+    /// <summary>
+    /// Job info acknowledge
+    /// <para>Acknowledgement of a Job info message.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0036 : Mid, IJob, IIntegrator, IAcknowledge
     {
-    }
+        public const int MID = 36;
 
-    public Mid0036(int revision = 4)
-      : base(36, revision)
-    {
+        public Mid0036() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0036(Header header) : base(header)
+        {
+        }
+
+        public Mid0036(int revision) : base(MID, revision) {  }
     }
-  }
 }

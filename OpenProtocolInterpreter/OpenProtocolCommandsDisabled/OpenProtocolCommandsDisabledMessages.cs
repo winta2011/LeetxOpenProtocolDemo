@@ -1,49 +1,35 @@
-﻿
-// Type: OpenProtocolInterpreter.OpenProtocolCommandsDisabled.OpenProtocolCommandsDisabledMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.OpenProtocolCommandsDisabled
 {
-  internal class OpenProtocolCommandsDisabledMessages : MessagesTemplate
-  {
-    public OpenProtocolCommandsDisabledMessages()
+    /// <summary>
+    /// Template for <see cref="IOpenProtocolCommandsDisabled"/> implementers.
+    /// </summary>
+    internal class OpenProtocolCommandsDisabledMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public OpenProtocolCommandsDisabledMessages() : base()
         {
-          420,
-          new MidCompiledInstance(typeof (Mid0420))
-        },
-        {
-          421,
-          new MidCompiledInstance(typeof (Mid0421))
-        },
-        {
-          422,
-          new MidCompiledInstance(typeof (Mid0422))
-        },
-        {
-          423,
-          new MidCompiledInstance(typeof (Mid0423))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0420.MID, new MidCompiledInstance(typeof(Mid0420)) },
+                { Mid0421.MID, new MidCompiledInstance(typeof(Mid0421)) },
+                { Mid0422.MID, new MidCompiledInstance(typeof(Mid0422)) },
+                { Mid0423.MID, new MidCompiledInstance(typeof(Mid0423)) }
+            };
         }
-      };
-    }
 
-    public OpenProtocolCommandsDisabledMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public OpenProtocolCommandsDisabledMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public OpenProtocolCommandsDisabledMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public OpenProtocolCommandsDisabledMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 419 && mid < 424;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 419 && mid < 424;
+    }
 }

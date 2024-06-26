@@ -1,21 +1,22 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.Advanced.Mid0125
-
-namespace OpenProtocolInterpreter.Job.Advanced
+﻿namespace OpenProtocolInterpreter.Job.Advanced
 {
-  public class Mid0125 : Mid, IAdvancedJob, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 125;
-
-    public Mid0125()
-      : this(new int?(0))
+    /// <summary>
+    /// Job line control info acknowledge
+    /// <para>Acknowledgement of Job line control info messages <see cref="Mid0121"/>, <see cref="Mid0122"/>, <see cref="Mid0123"/>, and <see cref="Mid0124"/>.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0125 : Mid, IAdvancedJob, IIntegrator, IAcknowledge
     {
-    }
+        public const int MID = 125;
 
-    public Mid0125(int? noAckFlag = 0)
-      : base(125, 1, noAckFlag)
-    {
+        public Mid0125() : base(MID, DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0125(Header header) : base(header)
+        {
+        }
     }
-  }
 }

@@ -1,21 +1,32 @@
-﻿
-// Type: OpenProtocolInterpreter.Alarm.Mid0070
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Alarm
 {
-  public class Mid0070 : Mid, IAlarm, IIntegrator
-  {
-    private const int LAST_REVISION = 2;
-    public const int MID = 70;
-
-    public Mid0070()
-      : this(2, new int?(0))
+    /// <summary>
+    /// Alarm subscribe
+    /// <para>A subscription for the alarms that can appear in the controller.</para>
+    /// <para>Message sent by Integrator</para>
+    /// <para>Answers: <see cref="Communication.Mid0005"/> Command accepted or <see cref="Communication.Mid0004"/> Command error, Alarm subscription already exists</para>
+    /// </summary>
+    public class Mid0070 : Mid, IAlarm, IIntegrator, ISubscription, IAcceptableCommand, IDeclinableCommand
     {
-    }
+        public const int MID = 70;
 
-    public Mid0070(int revision = 2, int? noAckFlag = 0)
-      : base(70, revision, noAckFlag)
-    {
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.AlarmSubscriptionAlreadyExists };
+
+        public Mid0070() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0070(Header header) : base(header)
+        {
+
+        }
+
+        public Mid0070(int revision, bool noAckFlag = false) : base(MID, revision, noAckFlag)
+        {
+
+        }
     }
-  }
 }

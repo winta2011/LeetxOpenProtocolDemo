@@ -1,66 +1,56 @@
-﻿
-// Type: OpenProtocolInterpreter.ParameterSet.Mid0018
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.ParameterSet
 {
-  public class Mid0018 : Mid, IParameterSet, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 18;
-
-    public int ParameterSetId
+    /// <summary>
+    /// Select Parameter set
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or 
+    ///     <see cref="Communication.Mid0004"/> Command error, Parameter set can not be set
+    /// </para>
+    /// </summary>
+    public class Mid0018 : Mid, IParameterSet, IIntegrator, IAcceptableCommand, IDeclinableCommand
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 18;
 
-    public Mid0018()
-      : base(18, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.ParameterSetCannotBeSet };
 
-    public Mid0018(int parameterSetId)
-      : this()
-    {
-      this.ParameterSetId = parameterSetId;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int ParameterSetId
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
+            get => GetField(1, DataFields.ParameterSetId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.ParameterSetId).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public bool Validate(out IEnumerable<string> errors)
-    {
-      List<string> stringList = new List<string>();
-      if (this.ParameterSetId < 0 || this.ParameterSetId > 999)
-        stringList.Add(new ArgumentOutOfRangeException("ParameterSetId", "Range: 000-999").Message);
-      errors = (IEnumerable<string>) stringList;
-      return errors.Any<string>();
-    }
+        public Mid0018() : this(new Header()
+        {
+            Mid = MID, 
+            Revision = DEFAULT_REVISION
+        })
+        {
+        }
 
-    public enum DataFields
-    {
-      PARAMETER_SET_ID,
+        public Mid0018(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.ParameterSetId, 20, 3, false)
+                            }
+                }
+            };
+        }
+
+
+        protected enum DataFields
+        {
+            ParameterSetId
+        }
     }
-  }
 }

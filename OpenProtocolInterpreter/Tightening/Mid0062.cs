@@ -1,21 +1,27 @@
-﻿
-// Type: OpenProtocolInterpreter.Tightening.Mid0062
-
-namespace OpenProtocolInterpreter.Tightening
+﻿namespace OpenProtocolInterpreter.Tightening
 {
-  public class Mid0062 : Mid, ITightening, IIntegrator
-  {
-    private const int LAST_REVISION = 6;
-    public const int MID = 62;
-
-    public Mid0062()
-      : this(6)
+    /// <summary>
+    /// Last tightening result data acknowledge
+    /// <para>Acknowledgement of last tightening result data.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0062 : Mid, ITightening, IIntegrator, IAcknowledge
     {
-    }
+        public const int MID = 62;
 
-    public Mid0062(int revision = 6)
-      : base(62, revision)
-    {
+        public Mid0062() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0062(int revision) : base(MID, revision)
+        {
+
+        }
+
+        public Mid0062(Header header) : base(header)
+        {
+        }
     }
-  }
 }

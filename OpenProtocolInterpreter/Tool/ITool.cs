@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Tool.ITool
-
-namespace OpenProtocolInterpreter.Tool
+﻿namespace OpenProtocolInterpreter.Tool
 {
-  public interface ITool
-  {
-  }
+    /// <summary>
+    /// Tool message category. Every tool mid must implement <see cref="ITool"/>.
+    /// </summary>
+    public interface ITool
+    {
+    }
 }

@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Vin.IVin
-
-namespace OpenProtocolInterpreter.Vin
+﻿namespace OpenProtocolInterpreter.Vin
 {
-  public interface IVin
-  {
-  }
+    /// <summary>
+    /// Vin message category. Every vin mid must implement <see cref="IVin"/>.
+    /// </summary>
+    public interface IVin
+    {
+    }
 }

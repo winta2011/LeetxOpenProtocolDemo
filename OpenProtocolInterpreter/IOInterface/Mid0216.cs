@@ -1,64 +1,67 @@
-﻿
-// Type: OpenProtocolInterpreter.IOInterface.Mid0216
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.IOInterface
 {
-  public class Mid0216 : Mid, IIOInterface, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 216;
-
-    public RelayNumber RelayNumber
+    /// <summary>
+    /// Relay function subscribe
+    /// <para>
+    ///     Subscribe for one single relay function. The data field consists of three ASCII digits, the relay number,
+    ///     which corresponds to the specific relay function.The relay numbers can be found in Table 101 above.
+    ///     At a subscription of a tracking event, <see cref="Mid0217"/> Relay function immediately returns the current relay
+    ///     status to the subscriber.
+    ///     <see cref="Mid0216"/> can only subscribe for one single relay function at a time, but still, Open Protocol supports
+    ///     keeping several relay function subscriptions simultaneously.
+    /// </para>    
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted or <see cref="Communication.Mid0004"/> Command error, The relay function subscription already exists</para>
+    /// </summary>
+    public class Mid0216 : Mid, IIOInterface, IIntegrator, ISubscription, IAcceptableCommand, IDeclinableCommand
     {
-      get
-      {
-        return (RelayNumber) this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public const int MID = 216;
 
-    public Mid0216()
-      : this(new int?(0))
-    {
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.RelayFunctionSubscriptionAlreadyExists };
 
-    public Mid0216(int? noAckFlag = 0)
-      : base(216, 1, noAckFlag)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0216(RelayNumber relayNumber, int? noAckFlag = 0)
-      : this(noAckFlag)
-    {
-      this.RelayNumber = relayNumber;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public RelayNumber RelayNumber
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
+            get => (RelayNumber)GetField(1, DataFields.RelayNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.RelayNumber).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      RELAY_NUMBER,
+        public Mid0216() : this(false)
+        {
+
+        }
+
+        public Mid0216(Header header) : base(header)
+        {
+        }
+
+        public Mid0216(bool noAckFlag = false) : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION,
+            NoAckFlag = noAckFlag
+        })
+        {
+            
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.RelayNumber, 20, 3, false)
+                    }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            RelayNumber
+        }
     }
-  }
 }

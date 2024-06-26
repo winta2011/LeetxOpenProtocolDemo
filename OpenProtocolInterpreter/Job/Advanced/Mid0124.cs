@@ -1,21 +1,22 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.Advanced.Mid0124
-
-namespace OpenProtocolInterpreter.Job.Advanced
+﻿namespace OpenProtocolInterpreter.Job.Advanced
 {
-  public class Mid0124 : Mid, IAdvancedJob, IController
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 124;
-
-    public Mid0124()
-      : this(new int?(0))
+    /// <summary>
+    /// Job line control done
+    /// <para>This message tells the integrator that the Job has been completed before the alert level 2 was reached.</para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0125"/> Job line control info acknowledged</para>
+    /// </summary>
+    public class Mid0124 : Mid, IAdvancedJob, IController, IAcknowledgeable<Mid0125>
     {
-    }
+        public const int MID = 124;
 
-    public Mid0124(int? noAckFlag = 0)
-      : base(124, 1, noAckFlag)
-    {
+        public Mid0124() : base(MID, DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0124(Header header) : base(header)
+        {
+        }
     }
-  }
 }

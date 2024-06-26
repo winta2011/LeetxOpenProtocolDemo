@@ -1,81 +1,64 @@
-﻿
-// Type: OpenProtocolInterpreter.IOInterface.Mid0221
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.IOInterface
 {
-  public class Mid0221 : Mid, IIOInterface, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private readonly IValueConverter<bool> _boolConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 221;
-
-    public DigitalInputNumber DigitalInputNumber
+    /// <summary>
+    /// Digital input function
+    /// <para>
+    ///     Upload of one specific digital input function status. See Table 80.
+    ///     For tracking event functions, <see cref="Mid0221"/> Digital input function, is sent each time the digital input
+    ///     function’s status (state) is changed. For digital input functions which are not tracking events, the
+    ///     upload is sent only when the digital input function is set high, 
+    ///     i.e. the data field “Digital input function status” will always be 1 for such functions.
+    /// </para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0222"/> Digital input function upload acknowledge</para>
+    /// </summary>
+    public class Mid0221 : Mid, IIOInterface, IController, IAcknowledgeable<Mid0222>
     {
-      get
-      {
-        return (DigitalInputNumber) this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public const int MID = 221;
 
-    public bool DigitalInputStatus
-    {
-      get
-      {
-        return this.GetField(1, 1).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 1).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
-
-    public Mid0221()
-      : this(new int?(0))
-    {
-    }
-
-    public Mid0221(int? noAckFlag = 0)
-      : base(221, 1, noAckFlag)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-    }
-
-    public Mid0221(DigitalInputNumber digitalInputNumber, bool digitalInputStatus, int? noAckFlag = 0)
-      : this(noAckFlag)
-    {
-      this.DigitalInputNumber = digitalInputNumber;
-      this.DigitalInputStatus = digitalInputStatus;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public DigitalInputNumber DigitalInputNumber
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 3, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 25, 1)
-          }
+            get => (DigitalInputNumber)GetField(1, DataFields.DigitalInputNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.DigitalInputNumber).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public bool DigitalInputStatus
+        {
+            get => GetField(1, DataFields.DigitalInputStatus).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(1, DataFields.DigitalInputStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
 
-    public enum DataFields
-    {
-      DIGITAL_INPUT_NUMBER,
-      DIGITAL_INPUT_STATUS,
+        public Mid0221() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+        }
+
+        public Mid0221(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.DigitalInputNumber, 20, 3),
+                        DataField.Boolean(DataFields.DigitalInputStatus, 25)
+                    }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            DigitalInputNumber,
+            DigitalInputStatus
+        }
     }
-  }
 }

@@ -1,113 +1,100 @@
-﻿
-// Type: OpenProtocolInterpreter.UserInterface.Mid0111
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.UserInterface
 {
-  public class Mid0111 : Mid, IUserInterface, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 111;
-
-    public int TextDuration
+    /// <summary>
+    /// Display user text on graph
+    /// <para>
+    ///     By sending this message the integrator can display a text on the graphic display. 
+    ///     The user can furthermore set the time for the text to be displayed and if the text 
+    ///     should be acknowledged by the operator or not.
+    /// </para>
+    /// <para>
+    ///     The text is divided into four lines with 25 ASCII characters each.If a line is shorter 
+    ///     than 25 characters it must be right padded with blanks(SPC 0x20).
+    /// </para>
+    /// <para>The first line is the text header and is in upper character.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or 
+    ///             <see cref="Communication.Mid0004"/> Command error, User text could not be displayed
+    /// </para>
+    /// </summary>
+    public class Mid0111 : Mid, IUserInterface, IIntegrator, IAcceptableCommand, IDeclinableCommand
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 111;
 
-    public RemovalCondition RemovalCondition
-    {
-      get
-      {
-        return (RemovalCondition) this.GetField(1, 1).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 1).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { };
 
-    public string Line1
-    {
-      get => this.GetField(1, 2).Value;
-      set => this.GetField(1, 2).SetValue(value);
-    }
-
-    public string Line2
-    {
-      get => this.GetField(1, 3).Value;
-      set => this.GetField(1, 3).SetValue(value);
-    }
-
-    public string Line3
-    {
-      get => this.GetField(1, 4).Value;
-      set => this.GetField(1, 4).SetValue(value);
-    }
-
-    public string Line4
-    {
-      get => this.GetField(1, 5).Value;
-      set => this.GetField(1, 5).SetValue(value);
-    }
-
-    public Mid0111()
-      : base(111, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0111(
-      int textDuration,
-      RemovalCondition removalCondition,
-      string line1,
-      string line2,
-      string line3,
-      string line4)
-      : this()
-    {
-      this.TextDuration = textDuration;
-      this.RemovalCondition = removalCondition;
-      this.Line1 = line1;
-      this.Line2 = line2;
-      this.Line3 = line3;
-      this.Line4 = line4;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int TextDuration
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 4, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 26, 1),
-            new DataField(2, 29, 25, ' '),
-            new DataField(3, 56, 25, ' '),
-            new DataField(4, 83, 25, ' '),
-            new DataField(5, 110, 25, ' ')
-          }
+            get => GetField(1, DataFields.TextDuration).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.TextDuration).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public RemovalCondition RemovalCondition
+        {
+            get => (RemovalCondition)GetField(1, DataFields.RemovalCondition).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.RemovalCondition).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public string Line1
+        {
+            get => GetField(1, DataFields.Line1Header).Value;
+            set => GetField(1, DataFields.Line1Header).SetValue(value);
+        }
+        public string Line2
+        {
+            get => GetField(1, DataFields.Line2).Value;
+            set => GetField(1, DataFields.Line2).SetValue(value);
+        }
+        public string Line3
+        {
+            get => GetField(1, DataFields.Line3).Value;
+            set => GetField(1, DataFields.Line3).SetValue(value);
+        }
+        public string Line4
+        {
+            get => GetField(1, DataFields.Line4).Value;
+            set => GetField(1, DataFields.Line4).SetValue(value);
+        }
 
-    public enum DataFields
-    {
-      TEXT_DURATION,
-      REMOVAL_CONDITION,
-      LINE_1_HEADER,
-      LINE_2,
-      LINE_3,
-      LINE_4,
+        public Mid0111() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+        }
+
+        public Mid0111(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.TextDuration, 20, 4),
+                                DataField.Number(DataFields.RemovalCondition, 26, 1),
+                                DataField.String(DataFields.Line1Header, 29, 25),
+                                DataField.String(DataFields.Line2, 56, 25),
+                                DataField.String(DataFields.Line3, 83, 25),
+                                DataField.String(DataFields.Line4, 110, 25)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            TextDuration,
+            RemovalCondition,
+            Line1Header,
+            Line2,
+            Line3,
+            Line4
+        }
     }
-  }
 }

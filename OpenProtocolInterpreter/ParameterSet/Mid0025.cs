@@ -1,9 +1,7 @@
-﻿
-// Type: OpenProtocolInterpreter.ParameterSet.Mid0025
-
-namespace OpenProtocolInterpreter.ParameterSet
+﻿namespace OpenProtocolInterpreter.ParameterSet
 {
-  internal class Mid0025
-  {
-  }
+
+    class Mid0025
+    {
+    }
 }

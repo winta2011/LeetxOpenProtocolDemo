@@ -1,21 +1,24 @@
-﻿
-// Type: OpenProtocolInterpreter.ParameterSet.Mid0010
-
-namespace OpenProtocolInterpreter.ParameterSet
+﻿namespace OpenProtocolInterpreter.ParameterSet
 {
-  public class Mid0010 : Mid, IParameterSet, IIntegrator
-  {
-    private const int LAST_REVISION = 3;
-    public const int MID = 10;
-
-    public Mid0010()
-      : this(3)
+    /// <summary>
+    /// Parameter set ID upload request
+    /// <para>A request to get the valid parameter set IDs from the controller.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Mid0011"/> Parameter set ID upload reply</para>
+    /// </summary>
+    public class Mid0010 : Mid, IParameterSet, IIntegrator, IAnswerableBy<Mid0011>
     {
-    }
+        public const int MID = 10;
 
-    public Mid0010(int revision = 3)
-      : base(10, revision)
-    {
+        public Mid0010() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0010(int revision) : base(MID, revision) { }
+
+        public Mid0010(Header header) : base(header)
+        {
+        }
     }
-  }
 }

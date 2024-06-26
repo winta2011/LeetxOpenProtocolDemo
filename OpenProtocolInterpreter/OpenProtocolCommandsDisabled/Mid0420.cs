@@ -1,21 +1,36 @@
-﻿
-// Type: OpenProtocolInterpreter.OpenProtocolCommandsDisabled.Mid0420
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.OpenProtocolCommandsDisabled
 {
-  public class Mid0420 : Mid, IOpenProtocolCommandsDisabled, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 420;
-
-    public Mid0420()
-      : this(new int?(0))
+    /// <summary>
+    /// Open Protocol commands disabled subscribe
+    /// <para>
+    ///     Set the subscription for the Open Protocol commands disable digital input. This command will result in
+    ///     transmission of the Open Protocol commands disable input status.When a subscription is set the Open
+    ///     Protocol commands disable digital input status is once uploaded(<see cref="Mid0421"/>) automatically.Thereafter,
+    ///     the status is uploaded each time the digital input status changes(push function).
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted or
+    ///         <see cref="Communication.Mid0004"/> Command error, Open Protocol commands disabled
+    ///         subscription already exists
+    /// </para>
+    /// </summary>
+    public class Mid0420 : Mid, IOpenProtocolCommandsDisabled, IIntegrator, ISubscription, IAcceptableCommand, IDeclinableCommand
     {
-    }
+        public const int MID = 420;
 
-    public Mid0420(int? noAckFlag = 0)
-      : base(420, 1, noAckFlag)
-    {
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.OpenProtocolCommandsDisabledSubscriptionAlreadyExists };
+
+        public Mid0420() : this(false)
+        {
+
+        }
+
+        public Mid0420(bool noAckFlag = false) : base(MID, DEFAULT_REVISION, noAckFlag) { }
+
+        public Mid0420(Header header) : base(header)
+        {
+        }
     }
-  }
 }

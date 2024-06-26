@@ -1,57 +1,39 @@
-﻿
-// Type: OpenProtocolInterpreter.Tightening.TighteningMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.Tightening
 {
-  internal class TighteningMessages : MessagesTemplate
-  {
-    public TighteningMessages()
+    /// <summary>
+    /// Template for <see cref="ITightening"/> implementers.
+    /// </summary>
+    internal class TighteningMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public TighteningMessages() : base()
         {
-          60,
-          new MidCompiledInstance(typeof (Mid0060))
-        },
-        {
-          61,
-          new MidCompiledInstance(typeof (Mid0061))
-        },
-        {
-          62,
-          new MidCompiledInstance(typeof (Mid0062))
-        },
-        {
-          63,
-          new MidCompiledInstance(typeof (Mid0063))
-        },
-        {
-          64,
-          new MidCompiledInstance(typeof (Mid0064))
-        },
-        {
-          65,
-          new MidCompiledInstance(typeof (Mid0065))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0060.MID, new MidCompiledInstance(typeof(Mid0060)) },
+                { Mid0061.MID, new MidCompiledInstance(typeof(Mid0061)) },
+                { Mid0062.MID, new MidCompiledInstance(typeof(Mid0062)) },
+                { Mid0063.MID, new MidCompiledInstance(typeof(Mid0063)) },
+                { Mid0064.MID, new MidCompiledInstance(typeof(Mid0064)) },
+                { Mid0065.MID, new MidCompiledInstance(typeof(Mid0065)) },
+                { Mid0066.MID, new MidCompiledInstance(typeof(Mid0066)) },
+                { Mid0902.MID, new MidCompiledInstance(typeof(Mid0902)) }
+            };
         }
-      };
-    }
 
-    public TighteningMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public TighteningMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public TighteningMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public TighteningMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 59 && mid < 66;
-  }
+        public override bool IsAssignableTo(int mid) => (mid > 59 && mid < 68) || (mid > 899 && mid < 903);
+    }
 }

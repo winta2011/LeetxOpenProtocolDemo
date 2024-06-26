@@ -1,61 +1,39 @@
-﻿
-// Type: OpenProtocolInterpreter.Communication.CommunicationMessages
-using OpenProtocolInterpreter.Messages;
-using System;
+﻿using System;
 using System.Collections.Generic;
-
+using OpenProtocolInterpreter.Messages;
 
 namespace OpenProtocolInterpreter.Communication
 {
-  internal class CommunicationMessages : MessagesTemplate
-  {
-    public CommunicationMessages()
+    /// <summary>
+    /// Template for <see cref="ICommunication"/> implementers.
+    /// </summary>
+    internal class CommunicationMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public CommunicationMessages() : base()
         {
-          1,
-          new MidCompiledInstance(typeof (Mid0001))
-        },
-        {
-          2,
-          new MidCompiledInstance(typeof (Mid0002))
-        },
-        {
-          3,
-          new MidCompiledInstance(typeof (Mid0003))
-        },
-        {
-          4,
-          new MidCompiledInstance(typeof (Mid0004))
-        },
-        {
-          5,
-          new MidCompiledInstance(typeof (Mid0005))
-        },
-        {
-          6,
-          new MidCompiledInstance(typeof (Mid0006))
-        },
-        {
-          8,
-          new MidCompiledInstance(typeof (Mid0008))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+               { Mid0001.MID, new MidCompiledInstance(typeof(Mid0001)) },
+               { Mid0002.MID, new MidCompiledInstance(typeof(Mid0002)) },
+               { Mid0003.MID, new MidCompiledInstance(typeof(Mid0003)) },
+               { Mid0004.MID, new MidCompiledInstance(typeof(Mid0004)) },
+               { Mid0005.MID, new MidCompiledInstance(typeof(Mid0005)) },
+               { Mid0006.MID, new MidCompiledInstance(typeof(Mid0006)) },
+               { Mid0008.MID, new MidCompiledInstance(typeof(Mid0008)) },
+               { Mid0009.MID, new MidCompiledInstance(typeof(Mid0009)) }
+            };
         }
-      };
-    }
 
-    public CommunicationMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public CommunicationMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public CommunicationMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public CommunicationMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 0 && mid < 10;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 0 && mid < 10;
+    }
 }

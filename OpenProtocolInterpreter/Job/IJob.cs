@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.IJob
-
-namespace OpenProtocolInterpreter.Job
+﻿namespace OpenProtocolInterpreter.Job
 {
-  public interface IJob
-  {
-  }
+    /// <summary>
+    /// Job message category. Every job mid must implement <see cref="IJob"/>.
+    /// </summary>
+    public interface IJob
+    {
+    }
 }

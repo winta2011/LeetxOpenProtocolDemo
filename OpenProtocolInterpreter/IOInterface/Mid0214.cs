@@ -1,65 +1,63 @@
-﻿
-// Type: OpenProtocolInterpreter.IOInterface.Mid0214
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.IOInterface
 {
-  public class Mid0214 : Mid, IIOInterface, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 2;
-    public const int MID = 214;
-
-    public int DeviceNumber
+    /// <summary>
+    /// IO device status request
+    /// <para>
+    ///     Request for the status of the relays and digital inputs at a device, e.g. an I/O expander. 
+    ///     The device is specified by a device number.
+    /// </para>    
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    /// Answer: <see cref="Mid0215"/> IO device status or
+    ///         <see cref="Communication.Mid0004"/> Command error, Faulty IO device ID, or IO device not connected
+    /// </para>
+    /// </summary>
+    public class Mid0214 : Mid, IIOInterface, IIntegrator, IAnswerableBy<Mid0215>, IDeclinableCommand
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 214;
 
-    public Mid0214()
-      : this(2)
-    {
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.FaultyIODeviceId, Error.IODeviceNotConnected };
 
-    public Mid0214(int revision = 2)
-      : base(214, revision)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0214(int deviceNumber, int revision = 2)
-      : this(revision)
-    {
-      this.DeviceNumber = deviceNumber;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int DeviceNumber
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
-        },
-        {
-          2,
-          new List<DataField>()
+            get => GetField(1, DataFields.DeviceNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.DeviceNumber).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      DEVICE_NUMBER,
+        public Mid0214() : this(DEFAULT_REVISION)
+        {
+        }
+
+        public Mid0214(Header header) : base(header)
+        {
+        }
+
+        public Mid0214(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.DeviceNumber, 20, 2, false)
+                    }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            DeviceNumber
+        }
     }
-  }
 }

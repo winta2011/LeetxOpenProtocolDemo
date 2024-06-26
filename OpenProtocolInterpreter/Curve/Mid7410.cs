@@ -1,6 +1,5 @@
 ﻿
 // Type: OpenProtocolInterpreter.Curve.Mid7410
-using OpenProtocolInterpreter.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,130 +10,57 @@ namespace OpenProtocolInterpreter.Curve
 {
     public class Mid7410 : Mid, ICurve, IController
     {
-        private readonly IValueConverter<int> _intConverter;
-        private readonly IValueConverter<CurveData> _curveDataConvter;
-        private readonly IValueConverter<long> _longConverter;
-        private readonly IValueConverter<double> _float64Converter;
-        private readonly IValueConverter<bool> _boolConverter;
-        private readonly IValueConverter<Decimal> _decimalConverter;
-        private readonly IValueConverter<DateTime> _dateConverter;
         private const int LAST_REVISION = 2;
         public const int MID = 7410;
         private const int MaxCurveDataLength = 750;
 
         public int ChannelId
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-            }
+            get; set;
         }
 
         public int ParameterSetId
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 1).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 1).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-            }
+            get; set;
         }
 
         public double TimeCoefficient
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 2).GetValue<double>(new Func<string, double>(this._float64Converter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 2).SetValue<double>(new Func<char, int, DataField.PaddingOrientations, double, string>(this._float64Converter.Convert), value);
-            }
+            get;set;
         }
 
         public double TorqueCoefficient
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 3).GetValue<double>(new Func<string, double>(this._float64Converter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 3).SetValue<double>(new Func<char, int, DataField.PaddingOrientations, double, string>(this._float64Converter.Convert), value);
-            }
+            get; set;
         }
 
         public double AngleCoefficient
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 4).GetValue<double>(new Func<string, double>(this._float64Converter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 4).SetValue<double>(new Func<char, int, DataField.PaddingOrientations, double, string>(this._float64Converter.Convert), value);
-            }
+            get; set;
         }
 
         public int NumMeasurementPoints
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 5).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 5).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-            }
+            get; set;
         }
 
         public int NumSegments
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 6).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 6).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-            }
+            get; set;
         }
 
         public int SegmentID
         {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 7).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 7).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-            }
+            get; set;
         }
 
-        public CurveData RawCurveData
-        {
-            get
-            {
-                return this.GetField(this.GetCurrentRevisionIndex(), 8).GetValue<CurveData>(new Func<string, CurveData>(this._curveDataConvter.Convert));
-            }
-            set
-            {
-                this.GetField(this.GetCurrentRevisionIndex(), 8).SetValue<CurveData>(new Func<char, int, DataField.PaddingOrientations, CurveData, string>(this._curveDataConvter.Convert), value);
-            }
-        }
 
         public List<double> Torque { get; private set; }
 
         public List<double> Angle { get; private set; }
 
         public List<double> Speed { get; private set; }
+        public CurveData RawCurveData { get; private set; }
 
         public Mid7410()
           : this(2)
@@ -145,202 +71,37 @@ namespace OpenProtocolInterpreter.Curve
         public Mid7410(int revision = 2)
           : base(7410, revision)
         {
-            this._curveDataConvter = (IValueConverter<CurveData>)new RawCurveDataConverter((IValueConverter<byte[]>)new ByteArrayConverter());
-            this._intConverter = (IValueConverter<int>)new Int32Converter();
-            this._float64Converter = (IValueConverter<double>)new Float64Converter();
-            this._longConverter = (IValueConverter<long>)new Int64Converter();
-            this._boolConverter = (IValueConverter<bool>)new BoolConverter();
-            this._decimalConverter = (IValueConverter<Decimal>)new DecimalTrucatedConverter(2);
-            this._dateConverter = (IValueConverter<DateTime>)new DateConverter();
             Torque = new List<double>();
             Angle = new List<double>();
             Speed = new List<double>();
         }
 
+
+        [Obsolete("Always Null", true)]
         protected override string BuildHeader()
         {
-            if (this.RevisionsByFields.Any<KeyValuePair<int, List<DataField>>>())
-            {
-                this.HeaderData.Length = 20;
-                this.HeaderData.Revision = this.HeaderData.Revision > 0 ? this.HeaderData.Revision : 1;
-                if (this.HeaderData.Revision == 1 || this.HeaderData.Revision == 999)
-                {
-                    foreach (DataField dataField in this.RevisionsByFields[this.HeaderData.Revision])
-                        this.HeaderData.Length += (dataField.HasPrefix ? 2 : 0) + dataField.Size;
-                }
-                else
-                {
-                    int num = this.HeaderData.Revision != 998 ? this.HeaderData.Revision : 6;
-                    for (int key = 2; key <= num; ++key)
-                    {
-                        foreach (DataField dataField in this.RevisionsByFields[key])
-                            this.HeaderData.Length += (dataField.HasPrefix ? 2 : 0) + dataField.Size;
-                    }
-                }
-            }
-            return this.HeaderData.ToString();
+        
+            return "";
         }
 
-        [Obsolete("Use PackBytes(), this method will convert everything to ASCII, which will break packages above revision 1 because of byte fields")]
+        [Obsolete("Always Null", true)]
         public override string Pack()
         {
-            string str = this.BuildHeader();
-            if (this.HeaderData.Revision == 1 || this.HeaderData.Revision == 999)
-            {
-                str += this.BuildDataFieldsPackage(1, this.RevisionsByFields[this.HeaderData.Revision]);
-            }
-            else
-            {
-                int num = this.HeaderData.Revision != 998 ? this.HeaderData.Revision : 6;
-                int prefixIndex = 1;
-                for (int key = 2; key <= num; ++key)
-                {
-                    str += this.BuildDataFieldsPackage(prefixIndex, this.RevisionsByFields[key]);
-                    prefixIndex += this.RevisionsByFields[key].Count<DataField>((Func<DataField, bool>)(x => x.HasPrefix));
-                }
-            }
-            return str;
+            
+            return "";
         }
-
+        [Obsolete("Always Null",true)]
         public override byte[] PackBytes()
         {
-            List<byte> byteList = new List<byte>();
-            byteList.AddRange((IEnumerable<byte>)this.BuildRawHeader());
-            if (this.HeaderData.Revision == 1 || this.HeaderData.Revision == 999)
-            {
-                byte[] bytes = this.ToBytes(this.BuildDataFieldsPackage(1, this.RevisionsByFields[this.HeaderData.Revision]));
-                byteList.AddRange((IEnumerable<byte>)bytes);
-            }
-            else
-            {
-                int num = this.HeaderData.Revision != 998 ? this.HeaderData.Revision : 6;
-                int prefixIndex = 1;
-                for (int key = 2; key <= num; ++key)
-                {
-                    byte[] collection = this.BuildDataFieldsRawPackage(prefixIndex, this.RevisionsByFields[key]);
-                    byteList.AddRange((IEnumerable<byte>)collection);
-                    prefixIndex += this.RevisionsByFields[key].Count<DataField>((Func<DataField, bool>)(x => x.HasPrefix));
-                }
-            }
-            return byteList.ToArray();
+            return null;
         }
 
-        [Obsolete("Use Parse(byte[] package), this method will parse everything as ASCII, which will break packages above revision 1 because of byte fields")]
         public override Mid Parse(string package)
         {
-            base.Parse(package);
-            this.GetField(this.HeaderData.Revision, 8).Size = package.Length - this.GetField(this.HeaderData.Revision, 8).Index;
-            this.ProcessDataFields(package, this.RevisionsByFields[this.HeaderData.Revision]);
-            return (Mid)this;
+            return this.Parse(Encoding.ASCII.GetBytes(package));
         }
 
-        private void ProcessDataFields(string package, List<DataField> fields)
-        {
-            byte[] bytes = Encoding.Default.GetBytes(package);
-            foreach (DataField field in fields)
-            {
-                try
-                {
-                    Enumerable.Empty<byte>();
-                    IEnumerable<byte> source = (IEnumerable<byte>)this.GetValue(field, bytes);
-                    if (this.IsByteField(field))
-                        field.RawValue = source.ToArray<byte>();
-                    else
-                        field.Value = this.ToAscii(source.ToArray<byte>());
-                }
-                catch (ArgumentOutOfRangeException ex)
-                {
-                }
-            }
-            int index = this.GetField(this.HeaderData.Revision, 8).Index;
-            Array.Copy((Array)bytes, index, (Array)this.RawCurveData.rawData, 0, bytes.Length - index);
-            if (this.RawCurveData.rawData.Length > 750)
-                Array.Copy((Array)this.RawCurveData.rawData, 0, (Array)this.RawCurveData.rawData, 0, 750);
-            this.CurveDecode();
-        }
-
-        protected override Dictionary<int, List<DataField>> RegisterDatafields()
-        {
-            return new Dictionary<int, List<DataField>>()
-      {
-        {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 24, 3, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(2, 29, 14, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(3, 45, 14, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(4, 61, 14, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(5, 77, 4, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(6, 83, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(7, 87, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(8, 91, 6, false)
-          }
-        },
-        {
-          2,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 24, 3, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(9, 29, 10, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(2, 41, 14, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(3, 57, 14, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(4, 73, 14, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(10, 89, 14, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(5, 105, 4, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(6, 111, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(7, 115, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(8, 117, 6, false)
-          }
-        }
-      };
-        }
-
-        private int GetCurrentRevisionIndex()
-        {
-            if (this.HeaderData.Revision == 999)
-                return 999;
-            return this.HeaderData.Revision > 1 ? 2 : 1;
-        }
-
-        private string BuildDataFieldsPackage(int prefixIndex, List<DataField> fields)
-        {
-            string str = string.Empty;
-            foreach (DataField field in fields)
-            {
-                if (field.HasPrefix)
-                {
-                    str = str + prefixIndex.ToString().PadLeft(2, '0') + field.Value;
-                    ++prefixIndex;
-                }
-                else
-                    str += field.Value;
-            }
-            return str;
-        }
-
-        private byte[] BuildDataFieldsRawPackage(int prefixIndex, List<DataField> fields)
-        {
-            List<byte> byteList = new List<byte>();
-            foreach (DataField field in fields)
-            {
-                if (field.HasPrefix)
-                {
-                    byte[] bytes = this.ToBytes(prefixIndex.ToString().PadLeft(2, '0'));
-                    byteList.AddRange((IEnumerable<byte>)bytes);
-                    ++prefixIndex;
-                }
-                if (this.IsByteField(field))
-                    byteList.AddRange((IEnumerable<byte>)field.RawValue);
-                else
-                    byteList.AddRange((IEnumerable<byte>)this.ToBytes(field.Value));
-            }
-            return byteList.ToArray();
-        }
-
-        private bool IsByteField(DataField dataField) => dataField.Field == 8;
+       
 
         private void CurveDecode()
         {
@@ -391,7 +152,7 @@ namespace OpenProtocolInterpreter.Curve
                 int andle = System.BitConverter.ToInt32(this.RawCurveData.rawData, curveIndex);
                 curveIndex += 4;
                 this.Angle.Add(andle * (float)this.AngleCoefficient);
-                if (this.HeaderData.Revision == 2)
+                if (this.Header.Revision == 2)
                 {
                     int spd = System.BitConverter.ToInt32(this.RawCurveData.rawData, curveIndex);
                     curveIndex += 4;
@@ -415,8 +176,9 @@ namespace OpenProtocolInterpreter.Curve
                 return null;
             }
             Mid7410 m7410 = new Mid7410(Revision);
-            m7410.HeaderData.NoAckFlag = NoAckFlag;
-            m7410.HeaderData.Revision = Revision;
+            m7410.Header.Length = Length;
+            m7410.Header.NoAckFlag = NoAckFlag==1;
+            m7410.Header.Revision = Revision;
             try
             {
                 //1.数据信息
@@ -484,7 +246,7 @@ namespace OpenProtocolInterpreter.Curve
             }
    
 
-            switch (m7410.HeaderData.Revision)
+            switch (m7410.Header.Revision)
             {
                 case 1:
                     {
@@ -514,20 +276,6 @@ namespace OpenProtocolInterpreter.Curve
                     break;
             }
 
-        }
-        public enum DataFields
-        {
-            CHANNEL_ID,
-            PARAMETER_SET_ID,
-            TIME_COEFFICIENT,
-            TORQUE_COEFFICIENT,
-            ANGLE_COEFFICIENT,
-            NUM_MEASUREMENT_POINTS,
-            NUM_SEGMENTS,
-            SEGMENT_ID,
-            CURVE_DATA,
-            TIGHTENING_ID,
-            SPEED_COEFFICIENT,
         }
     }
 }

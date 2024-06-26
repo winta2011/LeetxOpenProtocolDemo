@@ -1,69 +1,44 @@
-﻿
-// Type: OpenProtocolInterpreter.Tool.ToolMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.Tool
 {
-  internal class ToolMessages : MessagesTemplate
-  {
-    public ToolMessages()
+    /// <summary>
+    /// Template for <see cref="ITool"/> implementers.
+    /// </summary>
+    internal class ToolMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public ToolMessages() : base()
         {
-          40,
-          new MidCompiledInstance(typeof (Mid0040))
-        },
-        {
-          41,
-          new MidCompiledInstance(typeof (Mid0041))
-        },
-        {
-          42,
-          new MidCompiledInstance(typeof (Mid0042))
-        },
-        {
-          43,
-          new MidCompiledInstance(typeof (Mid0043))
-        },
-        {
-          44,
-          new MidCompiledInstance(typeof (Mid0044))
-        },
-        {
-          45,
-          new MidCompiledInstance(typeof (Mid0045))
-        },
-        {
-          46,
-          new MidCompiledInstance(typeof (Mid0046))
-        },
-        {
-          47,
-          new MidCompiledInstance(typeof (Mid0047))
-        },
-        {
-          48,
-          new MidCompiledInstance(typeof (Mid0048))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0040.MID, new MidCompiledInstance(typeof(Mid0040)) },
+                { Mid0041.MID, new MidCompiledInstance(typeof(Mid0041)) },
+                { Mid0042.MID, new MidCompiledInstance(typeof(Mid0042)) },
+                { Mid0043.MID, new MidCompiledInstance(typeof(Mid0043)) },
+                { Mid0044.MID, new MidCompiledInstance(typeof(Mid0044)) },
+                { Mid0045.MID, new MidCompiledInstance(typeof(Mid0045)) },
+                { Mid0046.MID, new MidCompiledInstance(typeof(Mid0046)) },
+                { Mid0047.MID, new MidCompiledInstance(typeof(Mid0047)) },
+                { Mid0048.MID, new MidCompiledInstance(typeof(Mid0048)) },
+                { Mid0701.MID, new MidCompiledInstance(typeof(Mid0701)) },
+                { Mid0702.MID, new MidCompiledInstance(typeof(Mid0702)) },
+                { Mid0703.MID, new MidCompiledInstance(typeof(Mid0703)) },
+                { Mid0704.MID, new MidCompiledInstance(typeof(Mid0704)) }
+            };
         }
-      };
-    }
 
-    public ToolMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public ToolMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public ToolMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public ToolMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 39 && mid < 49;
-  }
+        public override bool IsAssignableTo(int mid) => (mid > 39 && mid < 49) || (mid > 699 && mid < 705);
+    }
 }

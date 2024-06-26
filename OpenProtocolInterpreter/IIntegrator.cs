@@ -1,8 +1,9 @@
-﻿
-
-namespace OpenProtocolInterpreter
+﻿namespace OpenProtocolInterpreter
 {
-  public interface IIntegrator
-  {
-  }
+    /// <summary>
+    /// Contract which every integrator <see cref="Mid"/> message implements.
+    /// </summary>
+    public interface IIntegrator
+    {
+    }
 }

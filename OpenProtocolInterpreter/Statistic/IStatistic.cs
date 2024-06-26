@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Statistic.IStatistic
-
-namespace OpenProtocolInterpreter.Statistic
+﻿namespace OpenProtocolInterpreter.Statistic
 {
-  public interface IStatistic
-  {
-  }
+    /// <summary>
+    /// Statistic message category. Every statistic mid must implement <see cref="IStatistic"/>.
+    /// </summary>
+    public interface IStatistic
+    {
+    }
 }

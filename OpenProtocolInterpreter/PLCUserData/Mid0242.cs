@@ -1,68 +1,62 @@
-﻿
-// Type: OpenProtocolInterpreter.PLCUserData.Mid0242
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.PLCUserData
 {
-  public class Mid0242 : Mid, IPLCUserData, IController
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 242;
-
-    public string UserData
+    /// <summary>
+    /// User data download
+    /// <para>Used by the integrator to send user data input to the PLC.</para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0243"/> User data acknowledge</para>
+    /// </summary>
+    public class Mid0242 : Mid, IPLCUserData, IController, IAcknowledgeable<Mid0243>
     {
-      get => this.GetField(1, 0).Value;
-      set => this.GetField(1, 0).SetValue(value);
-    }
+        public const int MID = 242;
 
-    public Mid0242()
-      : this(new int?(0))
-    {
-    }
-
-    public Mid0242(int? noAckFlag = 0)
-      : base(242, 1, noAckFlag)
-    {
-    }
-
-    public Mid0242(string userData, int? noAckFlag = 0)
-      : this(noAckFlag)
-    {
-      this.UserData = userData;
-    }
-
-    public override string Pack()
-    {
-      this.GetField(1, 0).Size = this.UserData.Length;
-      return base.Pack();
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      this.GetField(1, 0).Size = package.Length - 20;
-      this.ProcessDataFields(package);
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public string UserData
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 200, ' ', hasPrefix: false)
-          }
+            get => GetField(1, DataFields.UserData).Value;
+            set => GetField(1, DataFields.UserData).SetValue(value);
         }
-      };
-    }
 
-    internal enum DataFields
-    {
-      USER_DATA,
+        public Mid0242() : base(MID, DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0242(Header header) : base(header)
+        {
+        }
+
+        public override string Pack()
+        {
+            GetField(1, DataFields.UserData).Size = UserData.Length;
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            GetField(1, DataFields.UserData).Size = Header.Length - 20;
+            ProcessDataFields(package);
+            return this;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                        DataField.Volatile(DataFields.UserData, 20, false)
+                    }
+                }
+            };
+        }
+
+        internal enum DataFields
+        {
+            UserData
+        }
     }
-  }
 }

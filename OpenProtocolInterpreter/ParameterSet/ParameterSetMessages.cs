@@ -1,102 +1,49 @@
-﻿//
-// Type: OpenProtocolInterpreter.ParameterSet.ParameterSetMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.ParameterSet
 {
-  internal class ParameterSetMessages : MessagesTemplate
-  {
-    public ParameterSetMessages()
+    /// <summary>
+    /// Template for <see cref="IParameterSet"/> implementers.
+    /// </summary>
+    internal class ParameterSetMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public ParameterSetMessages() : base()
         {
-          10,
-          new MidCompiledInstance(typeof (Mid0010))
-        },
-        {
-          11,
-          new MidCompiledInstance(typeof (Mid0011))
-        },
-        {
-          12,
-          new MidCompiledInstance(typeof (Mid0012))
-        },
-        {
-          13,
-          new MidCompiledInstance(typeof (Mid0013))
-        },
-        {
-          14,
-          new MidCompiledInstance(typeof (Mid0014))
-        },
-        {
-          15,
-          new MidCompiledInstance(typeof (Mid0015))
-        },
-        {
-          16,
-          new MidCompiledInstance(typeof (Mid0016))
-        },
-        {
-          17,
-          new MidCompiledInstance(typeof (Mid0017))
-        },
-        {
-          18,
-          new MidCompiledInstance(typeof (Mid0018))
-        },
-        {
-          19,
-          new MidCompiledInstance(typeof (Mid0019))
-        },
-        {
-          20,
-          new MidCompiledInstance(typeof (Mid0020))
-        },
-        {
-          21,
-          new MidCompiledInstance(typeof (Mid0021))
-        },
-        {
-          22,
-          new MidCompiledInstance(typeof (Mid0022))
-        },
-        {
-          23,
-          new MidCompiledInstance(typeof (Mid0023))
-        },
-        {
-          24,
-          new MidCompiledInstance(typeof (Mid0024))
-        },
-        {
-          2504,
-          new MidCompiledInstance(typeof (Mid2504))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0010.MID, new MidCompiledInstance(typeof(Mid0010)) },
+                { Mid0011.MID, new MidCompiledInstance(typeof(Mid0011)) },
+                { Mid0012.MID, new MidCompiledInstance(typeof(Mid0012)) },
+                { Mid0013.MID, new MidCompiledInstance(typeof(Mid0013)) },
+                { Mid0014.MID, new MidCompiledInstance(typeof(Mid0014)) },
+                { Mid0015.MID, new MidCompiledInstance(typeof(Mid0015)) },
+                { Mid0016.MID, new MidCompiledInstance(typeof(Mid0016)) },
+                { Mid0017.MID, new MidCompiledInstance(typeof(Mid0017)) },
+                { Mid0018.MID, new MidCompiledInstance(typeof(Mid0018)) },
+                { Mid0019.MID, new MidCompiledInstance(typeof(Mid0019)) },
+                { Mid0020.MID, new MidCompiledInstance(typeof(Mid0020)) },
+                { Mid0021.MID, new MidCompiledInstance(typeof(Mid0021)) },
+                { Mid0022.MID, new MidCompiledInstance(typeof(Mid0022)) },
+                { Mid0023.MID, new MidCompiledInstance(typeof(Mid0023)) },
+                { Mid0024.MID, new MidCompiledInstance(typeof(Mid0024)) },
+                { Mid2504.MID, new MidCompiledInstance(typeof(Mid2504)) },
+                { Mid2505.MID, new MidCompiledInstance(typeof(Mid2505)) },
+                { Mid2506.MID, new MidCompiledInstance(typeof(Mid2506)) }
+            };
         }
-      };
-    }
 
-    public ParameterSetMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public ParameterSetMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public ParameterSetMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public ParameterSetMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid)
-    {
-      if (mid > 9 && mid < 26)
-        return true;
-      return mid > 2499 && mid < 2506;
+        public override bool IsAssignableTo(int mid) => mid > 9 && mid < 26 || mid > 2499 && mid < 2507;
     }
-  }
 }

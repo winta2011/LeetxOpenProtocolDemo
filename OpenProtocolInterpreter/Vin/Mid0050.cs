@@ -1,69 +1,67 @@
-﻿
-// Type: OpenProtocolInterpreter.Vin.Mid0050
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Vin
 {
-  public class Mid0050 : Mid, IVin, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 50;
-
-    public string VinNumber
+    /// <summary>
+    /// Vehicle ID Number download request
+    /// <para>
+    ///     This message is replaced by <see cref="MultipleIdentifiers.Mid0150"/>. <see cref="Mid0050"/> is still supported.
+    /// </para>
+    /// <para>Used by the integrator to send a VIN number to the controller.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or 
+    ///             <see cref="Communication.Mid0004"/> Command error, VIN input source not granted
+    /// </para>
+    /// </summary>
+    public class Mid0050 : Mid, IVin, IIntegrator, IAcceptableCommand, IDeclinableCommand
     {
-      get => this.GetField(1, 0).Value;
-      set => this.GetField(1, 0).SetValue(value);
-    }
+        public const int MID = 50;
 
-    public Mid0050()
-      : base(50, 1)
-    {
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.VINInputSourceNotGranted };
 
-    public Mid0050(string vinNumber)
-      : this()
-    {
-      this.VinNumber = vinNumber;
-    }
-
-    public override string Pack()
-    {
-      this.GetField(1, 0).Size = this.VinNumber.Length;
-      return base.Pack();
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      this.GetField(1, 0).Size = this.HeaderData.Length - 20;
-      this.ProcessDataFields(package);
-      return (Mid) this;
-    }
-
-    public bool Validate(out string error)
-    {
-      error = string.Empty;
-      if (this.VinNumber.Length > 25)
-        error = new ArgumentOutOfRangeException("VinNumber", "Max of 25 characters").Message;
-      return !string.IsNullOrEmpty(error);
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public string VinNumber
         {
-          1,
-          new List<DataField>() { new DataField(0, 20, 0, false) }
+            get => GetField(1, DataFields.VinNumber).Value;
+            set => GetField(1, DataFields.VinNumber).SetValue(value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      VIN_NUMBER,
+        public Mid0050() : base(MID, DEFAULT_REVISION) { }
+
+        public Mid0050(Header header) : base(header)
+        {
+        }
+
+        public override string Pack()
+        {
+            GetField(1, DataFields.VinNumber).Size = VinNumber.Length;
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            GetField(1, DataFields.VinNumber).Size = Header.Length - 20;
+            ProcessDataFields(package);
+            return this;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Volatile(DataFields.VinNumber, 20, false), //dynamic
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            VinNumber
+        }
     }
-  }
 }

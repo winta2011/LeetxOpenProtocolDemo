@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.MultipleIdentifiers.IMultipleIdentifier
-
-namespace OpenProtocolInterpreter.MultipleIdentifiers
+﻿namespace OpenProtocolInterpreter.MultipleIdentifiers
 {
-  public interface IMultipleIdentifier
-  {
-  }
+    /// <summary>
+    /// Multiple identifier message category. Every multiple identifier mid must implement <see cref="IMultipleIdentifier"/>.
+    /// </summary>
+    public interface IMultipleIdentifier
+    {
+    }
 }

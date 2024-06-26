@@ -1,76 +1,81 @@
-﻿
-// Type: OpenProtocolInterpreter.Tool.Mid0045
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Tool
 {
-  public class Mid0045 : Mid, ITool, IIntegrator
-  {
-    private readonly IValueConverter<Decimal> _decimalConverter;
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 45;
-
-    public CalibrationUnit CalibrationValueUnit
+    /// <summary>
+    /// Set calibration value request
+    /// <para>
+    ///     This message is sent by the integrator in order to set the calibration value of the tool.
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or 
+    ///             <see cref="Communication.Mid0004"/> Command error, Calibration failed
+    /// </para>
+    /// </summary>
+    public class Mid0045 : Mid, ITool, IIntegrator, IAcceptableCommand, IDeclinableCommand
     {
-      get
-      {
-        return (CalibrationUnit) this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public const int MID = 45;
 
-    public Decimal CalibrationValue
-    {
-      get
-      {
-        return this.GetField(1, 1).GetValue<Decimal>(new Func<string, Decimal>(this._decimalConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 1).SetValue<Decimal>(new Func<char, int, DataField.PaddingOrientations, Decimal, string>(this._decimalConverter.Convert), value);
-      }
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.CalibrationFailed };
 
-    public Mid0045()
-      : base(45, 1)
-    {
-      this._decimalConverter = (IValueConverter<Decimal>) new DecimalTrucatedConverter(2);
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0045(CalibrationUnit calibrationValueUnit, Decimal calibrationValue)
-      : this()
-    {
-      this.CalibrationValueUnit = calibrationValueUnit;
-      this.CalibrationValue = calibrationValue;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public CalibrationUnit CalibrationValueUnit
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 1),
-            new DataField(1, 23, 6, '0', DataField.PaddingOrientations.LEFT_PADDED)
-          }
+            get => (CalibrationUnit)GetField(1, DataFields.CalibrationValueUnit).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.CalibrationValueUnit).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public decimal CalibrationValue
+        {
+            get => GetField(1, DataFields.CalibrationValue).GetValue(OpenProtocolConvert.ToTruncatedDecimal);
+            set => GetField(1, DataFields.CalibrationValue).SetValue(OpenProtocolConvert.TruncatedDecimalToString, value);
+        }
+        public int ChannelNumber
+        {
+            get => GetField(2, DataFields.ChannelNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(2, DataFields.ChannelNumber).SetValue(OpenProtocolConvert.ToString, value);
+        }
 
-    public enum DataFields
-    {
-      CALIBRATION_VALUE_UNIT,
-      CALIBRATION_VALUE,
+        public Mid0045() : this(DEFAULT_REVISION)
+        {
+        }
+
+        public Mid0045(Header header) : base(header)
+        {
+        }
+
+        public Mid0045(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.CalibrationValueUnit, 20, 1),
+                                DataField.Number(DataFields.CalibrationValue, 23, 6)
+                            }
+                },
+                {
+                    2, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.ChannelNumber, 31, 2),
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            CalibrationValueUnit,
+            CalibrationValue,
+            ChannelNumber
+        }
     }
-  }
 }

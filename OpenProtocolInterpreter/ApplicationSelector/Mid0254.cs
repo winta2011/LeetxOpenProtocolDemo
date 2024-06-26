@@ -1,80 +1,99 @@
-﻿
-// Type: OpenProtocolInterpreter.ApplicationSelector.Mid0254
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-
+using System.Text;
 
 namespace OpenProtocolInterpreter.ApplicationSelector
 {
-  public class Mid0254 : Mid, IApplicationSelector, IIntegrator
-  {
-    private readonly IValueConverter<IEnumerable<LightCommand>> _lightsConverter;
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 254;
-
-    public int DeviceId
+    /// <summary>
+    /// Selector control green lights
+    /// <para>    
+    ///     This message controls the selector green lights. 
+    ///     The green light can be set (steady), reset (off) or flash. 
+    ///     A command must be sent for each one of the selector positions (1-8).
+    /// </para>
+    /// <para>
+    ///     Note: This MID only works when the selector is put in external controlled mode and 
+    ///     this is only possible when the selector is loaded with software 1.20 or later.  
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted or <see cref="Communication.Mid0004"/> Command error, Faulty IO device ID</para>
+    /// </summary>
+    public class Mid0254 : Mid, IApplicationSelector, IIntegrator, IAcceptableCommand, IDeclinableCommand
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 254;
 
-    public List<LightCommand> GreenLights { get; set; }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.FaultyIODeviceId };
 
-    public Mid0254()
-      : base(254, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this._lightsConverter = (IValueConverter<IEnumerable<LightCommand>>) new LightCommandListConverter(this._intConverter);
-      if (this.GreenLights != null)
-        return;
-      this.GreenLights = new List<LightCommand>();
-    }
-
-    public Mid0254(int deviceId, IEnumerable<LightCommand> greenLights)
-      : this()
-    {
-      this.DeviceId = deviceId;
-      this.GreenLights = greenLights.ToList<LightCommand>();
-    }
-
-    public override string Pack()
-    {
-      this.GetField(1, 1).Value = this._lightsConverter.Convert((IEnumerable<LightCommand>) this.GreenLights);
-      return base.Pack();
-    }
-
-    public override Mid Parse(string package)
-    {
-      base.Parse(package);
-      this.GreenLights = this._lightsConverter.Convert(this.GetField(1, 1).Value).ToList<LightCommand>();
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int DeviceId
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 24, 8)
-          }
+            get => GetField(1, DataFields.DeviceId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.DeviceId).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public List<LightCommand> GreenLights { get; set; }
 
-    public enum DataFields
-    {
-      DEVICE_ID,
-      GREEN_LIGHT_COMMAND,
+        public Mid0254() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+
+        }
+
+        public Mid0254(Header header) : base(header)
+        {
+            GreenLights ??= [];
+        }
+
+        public override string Pack()
+        {
+            GetField(1, DataFields.GreenLightCommand).Value = PackGreenLights();
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            base.Parse(package);
+            GreenLights = ParseGreenLights(GetField(1, DataFields.GreenLightCommand).Value).ToList();
+            return this;
+        }
+
+        protected virtual string PackGreenLights()
+        {
+            var builder = new StringBuilder(GreenLights.Count);
+            foreach (var e in GreenLights)
+                builder.Append(OpenProtocolConvert.ToString((int)e));
+
+            return builder.ToString();
+        }
+
+        protected virtual List<LightCommand> ParseGreenLights(string value)
+        {
+            var list = new List<LightCommand>();
+            foreach (var c in value)
+                list.Add((LightCommand)OpenProtocolConvert.ToInt32(c.ToString()));
+
+            return list;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.DeviceId, 20, 2),
+                                new(DataFields.GreenLightCommand, 24, 8)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            DeviceId,
+            GreenLightCommand
+        }
     }
-  }
 }

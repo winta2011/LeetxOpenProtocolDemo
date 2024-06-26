@@ -1,16 +1,19 @@
-﻿
-// Type: OpenProtocolInterpreter.ParameterSet.Mid0023
-
-namespace OpenProtocolInterpreter.ParameterSet
+﻿namespace OpenProtocolInterpreter.ParameterSet
 {
-  public class Mid0023 : Mid, IParameterSet, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 23;
-
-    public Mid0023()
-      : base(23, 1)
+    /// <summary>
+    /// Lock at batch done upload Acknowledge
+    /// <para>This message is an acknowledge to <see cref="Mid0022"/>.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted</para>
+    /// </summary>
+    public class Mid0023 : Mid, IParameterSet, IIntegrator, IAcknowledge, IAcceptableCommand
     {
+        public const int MID = 23;
+
+        public Mid0023() : base(MID, DEFAULT_REVISION) { }
+
+        public Mid0023(Header header) : base(header)
+        {
+        }
     }
-  }
 }

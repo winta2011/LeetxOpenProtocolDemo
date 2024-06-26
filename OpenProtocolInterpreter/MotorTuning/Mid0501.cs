@@ -1,61 +1,55 @@
-﻿
-// Type: OpenProtocolInterpreter.MotorTuning.Mid0501
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.MotorTuning
 {
-  public class Mid0501 : Mid, IMotorTuning, IController
-  {
-    private readonly IValueConverter<bool> _boolConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 501;
-
-    public bool MotorTuneResult
+    /// <summary>
+    /// Motor tuning result data
+    /// <para>Upload the last motor tuning result.</para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0502"/> Motor tuning result data acknowledge</para>
+    /// </summary>
+    public class Mid0501 : Mid, IMotorTuning, IController, IAcknowledgeable<Mid0502>
     {
-      get
-      {
-        return this.GetField(1, 0).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
+        public const int MID = 501;
 
-    public Mid0501()
-      : this(new int?(0))
-    {
-    }
-
-    public Mid0501(int? noAckFlag = 0)
-      : base(501, 1, noAckFlag)
-    {
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-    }
-
-    public Mid0501(bool motorTuneResult, int? noAckFlag = 0)
-      : this(noAckFlag)
-    {
-      this.MotorTuneResult = motorTuneResult;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        /// <summary>
+        /// <para>Motor Tune Failed = false (0)</para>
+        /// <para>Motor Tune Success = true (1)</para>
+        /// </summary>
+        public bool MotorTuneResult
         {
-          1,
-          new List<DataField>() { new DataField(0, 20, 1) }
+            get => GetField(1, DataFields.MotorTuneResult).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(1, DataFields.MotorTuneResult).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      MOTOR_TUNE_RESULT,
+        public Mid0501() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+        }
+
+        public Mid0501(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Boolean(DataFields.MotorTuneResult, 20)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            MotorTuneResult
+        }
     }
-  }
 }

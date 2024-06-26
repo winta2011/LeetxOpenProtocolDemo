@@ -1,65 +1,71 @@
-﻿
-// Type: OpenProtocolInterpreter.Communication.Mid0005
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Communication
 {
-  public class Mid0005 : Mid, ICommunication, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    public const int MID = 5;
-    private const int LAST_REVISION = 1;
-
-    public int MidAccepted
+    /// <summary>
+    /// Application Communication positive acknowledge
+    /// <para>
+    ///     This message is used by the controller to confirm that the latest command, request or subscription sent
+    ///     by the integrator was accepted.The data field contains the MID of the request accepted if the special
+    ///     MIDs for request or subscription are used.
+    /// </para>
+    /// <para>
+    ///     It can also be used by the integrator to acknowledge received subscribed data/events upload and will
+    ///     then do all the special subscription data acknowledges obsolete.
+    /// </para>
+    /// <para>
+    ///     When using the communication acknowledgement of MID 9997 and MID 9998 together with
+    ///     sequence numbering this is an application level message only.
+    ///     When using the GENERIC subscription MIDs <see cref="Mid0008"/> and 0009 the data field contains the MID of
+    ///     the subscribed MID.
+    /// </para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0005 : Mid, ICommunication, IController
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 5;
 
-    public Mid0005()
-      : base(5, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0005(int midAccepted)
-      : this()
-    {
-      this.MidAccepted = midAccepted;
-    }
-
-    public bool Validate(out IEnumerable<string> errors)
-    {
-      List<string> stringList = new List<string>();
-      if (this.MidAccepted < 1 || this.MidAccepted > 9999)
-        stringList.Add(new ArgumentOutOfRangeException("MidAccepted", "Range: 0000-9999").Message);
-      errors = (IEnumerable<string>) stringList;
-      return stringList.Count > 0;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int MidAccepted
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 4, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
+            get => GetField(1, DataFields.MidAccepted).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.MidAccepted).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      MID_ACCEPTED,
+        public Mid0005() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0005(Header header) : base(header)
+        {
+        }
+
+        public Mid0005(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.MidAccepted, 20, 4, false)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            MidAccepted
+        }
     }
-  }
 }

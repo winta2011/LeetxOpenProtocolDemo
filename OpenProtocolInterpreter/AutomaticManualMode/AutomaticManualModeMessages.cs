@@ -1,57 +1,37 @@
-﻿
-// Type: OpenProtocolInterpreter.AutomaticManualMode.AutomaticManualModeMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.AutomaticManualMode
 {
-  internal class AutomaticManualModeMessages : MessagesTemplate
-  {
-    public AutomaticManualModeMessages()
+    /// <summary>
+    /// Template for <see cref="IAutomaticManualMode"/> implementers.
+    /// </summary>
+    internal class AutomaticManualModeMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public AutomaticManualModeMessages() : base()
         {
-          400,
-          new MidCompiledInstance(typeof (Mid0400))
-        },
-        {
-          401,
-          new MidCompiledInstance(typeof (Mid0401))
-        },
-        {
-          402,
-          new MidCompiledInstance(typeof (Mid0402))
-        },
-        {
-          403,
-          new MidCompiledInstance(typeof (Mid0403))
-        },
-        {
-          410,
-          new MidCompiledInstance(typeof (Mid0410))
-        },
-        {
-          411,
-          new MidCompiledInstance(typeof (Mid0411))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0400.MID, new MidCompiledInstance(typeof(Mid0400)) },
+                { Mid0401.MID, new MidCompiledInstance(typeof(Mid0401)) },
+                { Mid0402.MID, new MidCompiledInstance(typeof(Mid0402)) },
+                { Mid0403.MID, new MidCompiledInstance(typeof(Mid0403)) },
+                { Mid0410.MID, new MidCompiledInstance(typeof(Mid0410)) },
+                { Mid0411.MID, new MidCompiledInstance(typeof(Mid0411)) }
+            };
         }
-      };
-    }
 
-    public AutomaticManualModeMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public AutomaticManualModeMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public AutomaticManualModeMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public AutomaticManualModeMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 399 && mid < 412;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 399 && mid < 412;
+    }
 }

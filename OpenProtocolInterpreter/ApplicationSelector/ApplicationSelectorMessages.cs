@@ -1,57 +1,37 @@
-﻿
-// Type: OpenProtocolInterpreter.ApplicationSelector.ApplicationSelectorMessages
-using OpenProtocolInterpreter.Messages;
-using System;
+﻿using System;
 using System.Collections.Generic;
-
+using OpenProtocolInterpreter.Messages;
 
 namespace OpenProtocolInterpreter.ApplicationSelector
 {
-  internal class ApplicationSelectorMessages : MessagesTemplate
-  {
-    public ApplicationSelectorMessages()
+    /// <summary>
+    /// Template for <see cref="IApplicationSelector"/> implementers.
+    /// </summary>
+    internal class ApplicationSelectorMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public ApplicationSelectorMessages() : base()
         {
-          250,
-          new MidCompiledInstance(typeof (Mid0250))
-        },
-        {
-          251,
-          new MidCompiledInstance(typeof (Mid0251))
-        },
-        {
-          252,
-          new MidCompiledInstance(typeof (Mid0252))
-        },
-        {
-          253,
-          new MidCompiledInstance(typeof (Mid0253))
-        },
-        {
-          254,
-          new MidCompiledInstance(typeof (Mid0254))
-        },
-        {
-          (int) byte.MaxValue,
-          new MidCompiledInstance(typeof (Mid0255))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0250.MID, new MidCompiledInstance(typeof(Mid0250)) },
+                { Mid0251.MID, new MidCompiledInstance(typeof(Mid0251)) },
+                { Mid0252.MID, new MidCompiledInstance(typeof(Mid0252)) },
+                { Mid0253.MID, new MidCompiledInstance(typeof(Mid0253)) },
+                { Mid0254.MID, new MidCompiledInstance(typeof(Mid0254)) },
+                { Mid0255.MID, new MidCompiledInstance(typeof(Mid0255)) }
+            };
         }
-      };
-    }
 
-    public ApplicationSelectorMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public ApplicationSelectorMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public ApplicationSelectorMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public ApplicationSelectorMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 249 && mid < 256;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 249 && mid < 256;
+    }
 }

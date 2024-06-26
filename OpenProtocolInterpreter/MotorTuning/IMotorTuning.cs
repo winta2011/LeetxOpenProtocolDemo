@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.MotorTuning.IMotorTuning
-
-namespace OpenProtocolInterpreter.MotorTuning
+﻿namespace OpenProtocolInterpreter.MotorTuning
 {
-  public interface IMotorTuning
-  {
-  }
+    /// <summary>
+    /// Motor tuning message category. Every motor tuning mid must implement <see cref="IMotorTuning"/>.
+    /// </summary>
+    public interface IMotorTuning
+    {
+    }
 }

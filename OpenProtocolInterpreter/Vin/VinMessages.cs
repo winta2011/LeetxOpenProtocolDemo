@@ -1,53 +1,36 @@
-﻿
-// Type: OpenProtocolInterpreter.Vin.VinMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.Vin
 {
-  internal class VinMessages : MessagesTemplate
-  {
-    public VinMessages()
+    /// <summary>
+    /// Template for <see cref="IVin"/> implementers.
+    /// </summary>
+    internal class VinMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public VinMessages() : base()
         {
-          50,
-          new MidCompiledInstance(typeof (Mid0050))
-        },
-        {
-          51,
-          new MidCompiledInstance(typeof (Mid0051))
-        },
-        {
-          52,
-          new MidCompiledInstance(typeof (Mid0052))
-        },
-        {
-          53,
-          new MidCompiledInstance(typeof (Mid0053))
-        },
-        {
-          54,
-          new MidCompiledInstance(typeof (Mid0054))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0050.MID, new MidCompiledInstance(typeof(Mid0050)) },
+                { Mid0051.MID, new MidCompiledInstance(typeof(Mid0051)) },
+                { Mid0052.MID, new MidCompiledInstance(typeof(Mid0052)) },
+                { Mid0053.MID, new MidCompiledInstance(typeof(Mid0053)) },
+                { Mid0054.MID, new MidCompiledInstance(typeof(Mid0054)) }
+            };
         }
-      };
-    }
 
-    public VinMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public VinMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public VinMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public VinMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 49 && mid < 55;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 49 && mid < 55;
+    }
 }

@@ -1,45 +1,34 @@
-﻿
-// Type: OpenProtocolInterpreter.UserInterface.UserInterfaceMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.UserInterface
 {
-  internal class UserInterfaceMessages : MessagesTemplate
-  {
-    public UserInterfaceMessages()
+    /// <summary>
+    /// Template for <see cref="IUserInterface"/> implementers.
+    /// </summary>
+    internal class UserInterfaceMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public UserInterfaceMessages() : base()
         {
-          110,
-          new MidCompiledInstance(typeof (Mid0110))
-        },
-        {
-          111,
-          new MidCompiledInstance(typeof (Mid0111))
-        },
-        {
-          113,
-          new MidCompiledInstance(typeof (Mid0113))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0110.MID, new MidCompiledInstance(typeof(Mid0110)) },
+                { Mid0111.MID, new MidCompiledInstance(typeof(Mid0111)) },
+                { Mid0113.MID, new MidCompiledInstance(typeof(Mid0113)) }
+            };
         }
-      };
-    }
 
-    public UserInterfaceMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public UserInterfaceMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public UserInterfaceMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public UserInterfaceMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 109 && mid < 114;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 109 && mid < 114;
+    }
 }

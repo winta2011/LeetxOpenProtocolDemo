@@ -1,59 +1,59 @@
-﻿
-// Type: OpenProtocolInterpreter.Tool.Mid0046
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Tool
 {
-  public class Mid0046 : Mid, ITool, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 46;
-
-    public PrimaryTool PrimaryTool
+    /// <summary>
+    /// Set primary tool request
+    /// <para>This message is sent by the integrator in order to set tool data.</para>
+    /// <para>Warning 1: this MID requires programming control (see 4.4 Programming control).</para>
+    /// <para>Warning 2: the new configuration will not be active until the next controller reboot!</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or 
+    ///             <see cref="Communication.Mid0004"/> Command error, Programming control not granted or 
+    ///                                                 Invalid data (value not supported by controller)
+    /// </para>
+    /// </summary>
+    public class Mid0046 : Mid, ITool, IIntegrator, IAcceptableCommand, IDeclinableCommand
     {
-      get
-      {
-        return (PrimaryTool) this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public const int MID = 46;
 
-    public Mid0046()
-      : base(46, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.ProgrammingControlNotGranted, Error.InvalidData };
 
-    public Mid0046(PrimaryTool primaryTool)
-      : this()
-    {
-      this.PrimaryTool = primaryTool;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public PrimaryTool PrimaryTool
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED)
-          }
+            get => (PrimaryTool)GetField(1, DataFields.PrimaryTool).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.PrimaryTool).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      PRIMARY_TOOL,
+        public Mid0046() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+        }
+
+        public Mid0046(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.PrimaryTool, 20, 2)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            PrimaryTool
+        }
     }
-  }
 }

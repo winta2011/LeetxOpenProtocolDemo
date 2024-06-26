@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.PLCUserData.IPLCUserData
-
-namespace OpenProtocolInterpreter.PLCUserData
+﻿namespace OpenProtocolInterpreter.PLCUserData
 {
-  public interface IPLCUserData
-  {
-  }
+    /// <summary>
+    /// PLC user data message category. Every PLC user data mid must implement <see cref="IPLCUserData"/>.
+    /// </summary>
+    public interface IPLCUserData
+    {
+    }
 }

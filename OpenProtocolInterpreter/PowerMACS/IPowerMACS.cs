@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.PowerMACS.IPowerMACS
-
-namespace OpenProtocolInterpreter.PowerMACS
+﻿namespace OpenProtocolInterpreter.PowerMACS
 {
-  public interface IPowerMACS
-  {
-  }
+    /// <summary>
+    /// PowerMACs message category. Every PowerMACs mid must implement <see cref="IPowerMACS"/>.
+    /// </summary>
+    public interface IPowerMACS
+    {
+    }
 }

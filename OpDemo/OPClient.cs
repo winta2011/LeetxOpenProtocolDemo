@@ -3,12 +3,17 @@ using OpenProtocolInterpreter;
 using OpenProtocolInterpreter.Communication;
 using OpenProtocolInterpreter.Curve;
 using OpenProtocolInterpreter.KeepAlive;
+using OpenProtocolInterpreter.ParameterSet;
 using OpenProtocolInterpreter.Tightening;
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.Remoting.Activation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +37,7 @@ namespace Leetx.OpenProtocol
         string ip = "";
         int connectId = 0;
         /// <summary>
+
         /// 工具名
         /// </summary>
         public string ToolName
@@ -40,7 +46,7 @@ namespace Leetx.OpenProtocol
             set { toolName = value; }
         }
 
-         string sn = "";
+        string sn = "";
         /// <summary>
         /// 扳手序列号
         /// </summary>
@@ -55,6 +61,7 @@ namespace Leetx.OpenProtocol
         /// Mid号,mid结果事件
         /// </summary>
         public event Action<int, Mid> TightingProcessEvent;
+        Dictionary<string, Mid> mids = new Dictionary<string, Mid>();
         private string connnectStatus = "未启动";
         /// <summary>
         /// 连接状态报告
@@ -64,6 +71,15 @@ namespace Leetx.OpenProtocol
 
         public OpClient()
         {
+            mids["0002"] = new Mid0002();
+            mids["0003"] = new Mid0003();
+            mids["0004"] = new Mid0004();
+            mids["0005"] = new Mid0005();
+            mids["0011"] = new Mid0011();
+            mids["0013"] = new Mid0013();
+            mids["0015"] = new Mid0015();
+            mids["0061"] = new Mid0061();
+            mids["7410"] = new Mid7410();
 
         }
         /// <summary>
@@ -73,16 +89,9 @@ namespace Leetx.OpenProtocol
         /// <param name="port">工具OP服务端口号</param>
         /// <param name="keepAliveInterval">Op心跳间隔</param>
         /// <returns></returns>
-        public async Task<bool> Open(string ipString, int port, int keepAliveInterval = 3000 )
+        public async Task<bool> Open(string ipString, int port, int keepAliveInterval = 3000)
         {
-            midInterpreter = new MidInterpreter()
-                                            .UseAllMessages(new Type[]
-                                            {
-                                    typeof(Mid0001),typeof(Mid0002),typeof(Mid0003),typeof(Mid0004),typeof(Mid0005),
-                                    typeof(Mid0060),typeof(Mid0061),typeof(Mid0062),typeof(Mid0064),typeof(Mid0065),
-                                    typeof(Mid7408),typeof(Mid7410),typeof(Mid7411),
-                                    typeof(Mid9999)
-                                            });
+
             gGlobalRunFalg = true;
             ipTimeOut = ipString;
             Console.WriteLine(ipString + connnectStatus);
@@ -92,7 +101,7 @@ namespace Leetx.OpenProtocol
                 {
                     ConnnectStatus = "开始连接...";
                     OpenTcpClient(ipString, port);
-                    if (tcpClient==null || tcpClient.Connected == false || networkStream == null)
+                    if (tcpClient == null || tcpClient.Connected == false || networkStream == null)
                     {
                         await Task.Delay(3000);
                         continue;
@@ -115,19 +124,20 @@ namespace Leetx.OpenProtocol
                         toolName = mid0002.ControllerName;
                         sn = mid0002.ControllerSerialNumber;
                     }
-
                     ConnnectStatus = "OP通讯已建立。发送订阅 Mid0060...";
-                    bool subOk = await Subscribe(new Mid0060(1, 0).Pack());//订阅结果
+                    bool subOk = await Subscribe(new Mid0060(1, false).Pack());//订阅结果
                     {
                         ConnnectStatus = "发送曲线订阅7408";
                         subOk = await Subscribe(new Mid7408(2, 0).Pack()); //订阅曲线
+                        subOk = await Subscribe(new Mid0014(2).Pack()); //订阅Pset
+
                     }
                     keepAliveWatch = DateTime.Now;
                     while (bRunFlag)
                     {
                         if (tcpClient != null && tcpClient.Connected)
                         {
-                            Console.WriteLine($" {ipString} 发送心跳 ... ");
+                            //  Console.WriteLine($" {ipString} 发送心跳 ... ");
                             await WriteMidAsync(sMid9999, 3000);
                         }
                         else
@@ -137,7 +147,7 @@ namespace Leetx.OpenProtocol
                         if ((DateTime.Now - keepAliveWatch).TotalMilliseconds > Timeout)
                         {
                             bRunFlag = false;
-                            Console.WriteLine($"{ipTimeOut}心跳超时, 退出");
+                            //  Console.WriteLine($"{ipTimeOut}心跳超时, 退出");
                         }
                         await Task.Delay(keepAliveInterval);
                     }
@@ -253,7 +263,6 @@ namespace Leetx.OpenProtocol
 
             }, TaskCreationOptions.None);
         }
-        Mid7410 mid7410 = new Mid7410();
         void HandleRxBuff(byte[] buff)
         {
             int frameLen = 0;
@@ -264,26 +273,37 @@ namespace Leetx.OpenProtocol
             {
                 return;
             }
-            Console.WriteLine($"{ip}收到 Mid {midNo}");
+            Console.WriteLine($"{ip}收到 Mid {midNo} 报文: {frameAscii} ");
             switch (midNo)
             {
                 case "0061":  //结果数据
-                    var mid0061 = midInterpreter.Parse<Mid0061>(frameAscii);
-                    WriteMid(new Mid0062().Pack()); //mid0061.HeaderData.Revision
-                    TightingProcessEvent?.BeginInvoke(Mid0061.MID, mid0061, (x) =>
+                    var mid0061 = PraseMid(frameAscii);
+                    WriteMid(new Mid0062().Pack()); // mid0061 .Header .Revision
+                    TightingProcessEvent?.BeginInvoke( Mid0061.MID, mid0061, (x) =>
                     {
                         Console.WriteLine("----> Tighting Result Completed !");
                     }, null);
                     break;
+                case "7404":
+                    Console.WriteLine($"{DateTime.Now.Second}.{DateTime.Now.Millisecond}");
+                    break;
                 case "7410": //曲线数据 //处理曲线帧解析函数 
-                    TightingProcessEvent?.BeginInvoke(Mid7410.MID, mid7410.Parse(buff), x =>
+                    var mid7410 = PraseMid(frameAscii);
+                    TightingProcessEvent?.BeginInvoke( Mid7410.MID , mid7410, x =>
+                    {
+                        Console.WriteLine("----> Cureve Completed !");
+                    }, null);
+                    break;
+                case "0015": //激活的Pset变更
+                    var mid15 = PraseMid(frameAscii);
+                    TightingProcessEvent?.BeginInvoke( Mid0015.MID , mid15 , x =>
                     {
                         Console.WriteLine("----> Cureve Completed !");
                     }, null);
                     break;
                 case "9999":
                     keepAliveWatch = DateTime.Now;
-                    Console.WriteLine("收到心跳响应...");
+                    //  Console.WriteLine("收到心跳响应...");
                     break;
                 default:
                     sQueryResponse = frameAscii;
@@ -291,8 +311,18 @@ namespace Leetx.OpenProtocol
                     break;
             }
         }
+
+        private Mid PraseMid(string buff)
+        {
+            var key = buff.Substring(4, 4);
+            if (mids.ContainsKey(key))
+                return  mids[key]?.Parse(Encoding.ASCII.GetBytes(buff));
+            return null;
+        }
+
         public async Task WriteMidAsync(string str, int timeout = Timeout)
         {
+            Console.WriteLine($"发送 指令 {str} ");
             byte[] bytes = Encoding.ASCII.GetBytes(str);
             Array.Copy(bytes, TxBuf, bytes.Length);
             TxBuf[bytes.Length] = 0;
@@ -319,8 +349,7 @@ namespace Leetx.OpenProtocol
             bool bOK = await sem.WaitAsync(timeout);
             if (bOK)
             {
-                Mid mid = midInterpreter.Parse(sQueryResponse);
-                return mid;
+                return PraseMid(sQueryResponse);
             }
             return null;
         }
@@ -336,8 +365,7 @@ namespace Leetx.OpenProtocol
             bool bOK = await sem.WaitAsync(timeout);
             if (bOK)
             {
-                Mid mid = midInterpreter.Parse(sQueryResponse);
-                return mid;
+                return PraseMid(sQueryResponse);
             }
             return null;
         }
@@ -348,10 +376,11 @@ namespace Leetx.OpenProtocol
             for (int i = 0; i < 10; i++)
             {
                 Mid rxMid = await SendMidWithResponse(new Mid0001(5).Pack(), 5000);//7.20 ,发送0001时的是版本6
-                if (rxMid != null && rxMid.HeaderData.Mid == 2)
+                if (rxMid != null && rxMid.Header.Mid == 2)
                 {
                     return (Mid0002)rxMid;
                 }
+                await Task.Delay(1000);
             }
             return null;
         }
@@ -363,14 +392,14 @@ namespace Leetx.OpenProtocol
                 Mid rxMid = await SendMidWithResponse(subscribeMidString);
                 if (rxMid != null)
                 {
-                    if (rxMid.HeaderData.Mid == 5)
+                    if (rxMid.Header.Mid == 5)
                     {
                         return true;
                     }
-                    if (rxMid.HeaderData.Mid == 4)
+                    if (rxMid.Header.Mid == 4)
                     {
                         var mid0004 = (Mid0004)midInterpreter.Parse(sQueryResponse);
-                        if (mid0004.ErrorCode == Error.SUBSCRIPTION_ALREADY_EXISTS)
+                        if (mid0004.ErrorCode == Error.SubscriptionDoesntExists)
                         {
                             return true;
                         }
@@ -387,14 +416,13 @@ namespace Leetx.OpenProtocol
         /// <returns></returns>
         private async Task<Mid0065> QueryResultByTighteningID(long tighteningID)
         {
-            var txMid = new Mid0064((int)tighteningID, 1);
+            var txMid = new Mid0064(1) { TighteningId = tighteningID };
             for (int i = 0; i < RetryTimes; i++)
             {
                 Mid rxMid = await SendMidWithResponse(txMid.Pack(), Timeout);
-                Console.WriteLine($"Mid0064 -->,ID:{tighteningID}");
                 if (rxMid != null)
                 {
-                    if (rxMid.HeaderData.Mid == 65)
+                    if (rxMid.Header.Mid == 65)
                     {
                         return (Mid0065)rxMid;
                     }

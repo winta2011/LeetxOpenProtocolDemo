@@ -1,82 +1,87 @@
-﻿
-// Type: OpenProtocolInterpreter.PowerMACS.Mid0105
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.PowerMACS
 {
-  public class Mid0105 : Mid, IPowerMACS, IIntegrator
-  {
-    private readonly IValueConverter<bool> _boolConverter;
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 4;
-    public const int MID = 105;
-
-    public int DataNumberSystem
+    /// <summary>
+    /// Last PowerMACS tightening result data subscribe
+    /// <para>
+    ///    Set the subscription for the rundowns result. The result of this command will be the transmission of
+    ///    the rundown result after the tightening is performed(push function).
+    /// </para>
+    /// <para>
+    ///    This telegram is also used for a PowerMACS 4000 system running a press instead of a spindle.A
+    ///    press system only supports revision 4 and higher of the telegram and will answer with <see cref="Communication.Mid0004"/>,
+    ///    MID revision unsupported if a subscription is made with a lower revision.
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or 
+    ///         <see cref="Communication.Mid0004"/> Command error, Subscription already exists or MID revision unsupported
+    /// </para>
+    /// </summary>
+    public class Mid0105 : Mid, IPowerMACS, IIntegrator, ISubscription, IAcceptableCommand, IDeclinableCommand
     {
-      get => this.GetField(2, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(2, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 105;
 
-    public bool SendOnlyNewData
-    {
-      get
-      {
-        return this.GetField(3, 1).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(3, 1).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.SubscriptionAlreadyExists, Error.MidRevisionUnsupported };
 
-    public Mid0105()
-      : this(4, new int?(0))
-    {
-    }
-
-    public Mid0105(int revision = 4, int? noAckFlag = 0)
-      : base(105, revision, noAckFlag)
-    {
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int DataNumberSystem
         {
-          1,
-          new List<DataField>()
-        },
-        {
-          2,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 10, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
-        },
-        {
-          3,
-          new List<DataField>() { new DataField(1, 30, 1, false) }
-        },
-        {
-          4,
-          new List<DataField>()
+            get => GetField(2, DataFields.DataNumberSystem).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(2, DataFields.DataNumberSystem).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
+        public bool SendOnlyNewData
+        {
+            get => GetField(3, DataFields.SendOnlyNewData).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(3, DataFields.SendOnlyNewData).SetValue(OpenProtocolConvert.ToString, value);
+        }
 
-    public enum DataFields
-    {
-      DATA_NUMBER_SYSTEM,
-      SEND_ONLY_NEW_DATA,
+        public Mid0105() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0105(Header header) : base(header)
+        {
+        }
+
+        public Mid0105(bool noAckFlag = false) : this(DEFAULT_REVISION, noAckFlag)
+        {
+
+        }
+
+        public Mid0105(int revision, bool noAckFlag = false) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision,
+            NoAckFlag = noAckFlag
+        })
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    2, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.DataNumberSystem, 20, 10, false),
+                            }
+                },
+                {
+                    3, new List<DataField>()
+                            {
+                                DataField.Boolean(DataFields.SendOnlyNewData, 30, false)
+                            }
+                },
+            };
+        }
+
+        protected enum DataFields
+        {
+            DataNumberSystem,
+            SendOnlyNewData
+        }
     }
-  }
 }

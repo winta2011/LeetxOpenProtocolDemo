@@ -1,16 +1,20 @@
-﻿
-// Type: OpenProtocolInterpreter.ParameterSet.Mid0016
-
-namespace OpenProtocolInterpreter.ParameterSet
+﻿namespace OpenProtocolInterpreter.ParameterSet
 {
-  public class Mid0016 : Mid, IParameterSet, IIntegrator
-  {
-    private const int LAST_REVISION = 1;
-    public const int MID = 16;
-
-    public Mid0016()
-      : base(16, 1)
+    /// <summary>
+    /// Parameter set selected acknowledge
+    /// <para>Acknowledgement for a new parameter set selected.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: None</para>
+    /// </summary>
+    public class Mid0016 : Mid, IParameterSet, IIntegrator, IAcknowledge
     {
+        public const int MID = 16;
+
+        public Mid0016() : base(MID, DEFAULT_REVISION) { }
+
+        public Mid0016(Header header) : base(header)
+        {
+        }
+        public Mid0016(int revision) : base(MID, revision) { }
     }
-  }
 }

@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.IOInterface.IIOInterface
-
-namespace OpenProtocolInterpreter.IOInterface
+﻿namespace OpenProtocolInterpreter.IOInterface
 {
-  public interface IIOInterface
-  {
-  }
+    /// <summary>
+    /// IO interface message category. Every IO interface mid must implement <see cref="IIOInterface"/>.
+    /// </summary>
+    public interface IIOInterface
+    {
+    }
 }

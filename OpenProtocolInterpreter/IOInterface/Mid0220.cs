@@ -1,64 +1,69 @@
-﻿
-// Type: OpenProtocolInterpreter.IOInterface.Mid0220
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.IOInterface
 {
-  public class Mid0220 : Mid, IIOInterface, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 220;
-
-    public DigitalInputNumber DigitalInputNumber
+    /// <summary>
+    /// Digital input function subscribe
+    /// <para>
+    ///     Subscribe for one single digital input function. The data field consists of three ASCII digits, 
+    ///     the digital input function number. The digital input function numbers can be found in Table 80 above.
+    ///     At a subscription of a tracking event, <see cref="Mid0221"/> Digital input function upload immediately returns the 
+    ///     current digital input function status to the subscriber.
+    /// </para>
+    /// <para>
+    ///     <see cref="Mid0220"/> can only subscribe for one single digital input function at a time, 
+    ///     but still, Open Protocol supports keeping several digital input function subscriptions simultaneously.
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted or <see cref="Communication.Mid0004"/> Command error, The digital input function subscription already exists</para>
+    /// </summary>
+    public class Mid0220 : Mid, IIOInterface, IIntegrator, ISubscription, IAcceptableCommand, IDeclinableCommand
     {
-      get
-      {
-        return (DigitalInputNumber) this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public const int MID = 220;
 
-    public Mid0220()
-      : this(new int?(0))
-    {
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] {  };
 
-    public Mid0220(int? noAckFlag = 0)
-      : base(220, 1, noAckFlag)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0220(DigitalInputNumber digitalInputNumber, int? noAckFlag = 0)
-      : this(noAckFlag)
-    {
-      this.DigitalInputNumber = digitalInputNumber;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public DigitalInputNumber DigitalInputNumber
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
+            get => (DigitalInputNumber)GetField(1, DataFields.DigitalInputNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.DigitalInputNumber).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      DIGITAL_INPUT_NUMBER,
+        public Mid0220() : this(false)
+        {
+
+        }
+
+        public Mid0220(Header header) : base(header)
+        {
+        }
+
+        public Mid0220(bool noAckFlag = false) : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION,
+            NoAckFlag = noAckFlag
+        })
+        {
+
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.DigitalInputNumber, 20, 3, false)
+                    }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            DigitalInputNumber
+        }
     }
-  }
 }

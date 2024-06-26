@@ -1,317 +1,220 @@
-﻿
-// Type: OpenProtocolInterpreter.Job.Mid0035
-using OpenProtocolInterpreter.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
 
 namespace OpenProtocolInterpreter.Job
 {
-  public class Mid0035 : Mid, IJob, IController
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private readonly IValueConverter<DateTime> _datetimeConverter;
-    public const int MID = 35;
-    private const int LAST_REVISION = 4;
-
-    public int JobId
+    /// <summary>
+    /// <para>Job info</para>
+    ///     <para>The Job info subscriber will receive a Job info message after a Job has been selected and after each
+    ///     tightening performed in the Job.The Job info consists of the ID of the currently running Job, the Job
+    ///     status, the Job batch mode, the Job batch size and the Job batch counter.</para>
+    /// <para>Message sent by: Controller</para>
+    /// <para>Answer: <see cref="Mid0036"/></para>
+    /// </summary>
+    public class Mid0035 : Mid, IJob, IController, IAcknowledgeable<Mid0036>
     {
-      get => this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
+        public const int MID = 35;
 
-    public JobStatus JobStatus
-    {
-      get
-      {
-        return (JobStatus) this.GetField(1, 1).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 1).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
-
-    public JobBatchMode JobBatchMode
-    {
-      get
-      {
-        return (JobBatchMode) this.GetField(1, 2).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 2).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
-
-    public int JobBatchSize
-    {
-      get => this.GetField(1, 3).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 3).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int JobBatchCounter
-    {
-      get => this.GetField(1, 4).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 4).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public DateTime TimeStamp
-    {
-      get
-      {
-        return this.GetField(1, 5).GetValue<DateTime>(new Func<string, DateTime>(this._datetimeConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 5).SetValue<DateTime>(new Func<char, int, DataField.PaddingOrientations, DateTime, string>(this._datetimeConverter.Convert), value);
-      }
-    }
-
-    public int JobCurrentStep
-    {
-      get => this.GetField(3, 6).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(3, 6).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int JobTotalNumberOfSteps
-    {
-      get => this.GetField(3, 7).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(3, 7).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int JobStepType
-    {
-      get => this.GetField(3, 8).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(3, 8).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public JobTighteningStatus JobTighteningStatus
-    {
-      get
-      {
-        return (JobTighteningStatus) this.GetField(4, 9).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(4, 9).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
-
-    public int JobSequenceNumber
-    {
-      get => this.GetField(5, 10).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(5, 10).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public string VinNumber
-    {
-      get => this.GetField(5, 11).Value;
-      set => this.GetField(5, 11).SetValue(value);
-    }
-
-    public string IdentifierResultPart2
-    {
-      get => this.GetField(5, 12).Value;
-      set => this.GetField(5, 12).SetValue(value);
-    }
-
-    public string IdentifierResultPart3
-    {
-      get => this.GetField(5, 13).Value;
-      set => this.GetField(5, 13).SetValue(value);
-    }
-
-    public string IdentifierResultPart4
-    {
-      get => this.GetField(5, 14).Value;
-      set => this.GetField(5, 14).SetValue(value);
-    }
-
-    public Mid0035()
-      : this(4, new int?(0))
-    {
-    }
-
-    public Mid0035(int revision = 4, int? noAckFlag = 0)
-      : base(35, revision, noAckFlag)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-      this._datetimeConverter = (IValueConverter<DateTime>) new DateConverter();
-      this.HandleRevision();
-    }
-
-    public Mid0035(
-      int jobId,
-      JobStatus jobStatus,
-      JobBatchMode jobBatchMode,
-      int jobBatchSize,
-      int jobBatchCounter,
-      DateTime timestamp,
-      int revision = 2,
-      int? noAckFlag = 0)
-      : this(revision, noAckFlag)
-    {
-      this.JobId = jobId;
-      this.JobStatus = jobStatus;
-      this.JobBatchMode = jobBatchMode;
-      this.JobBatchSize = jobBatchSize;
-      this.JobBatchCounter = jobBatchCounter;
-      this.TimeStamp = timestamp;
-    }
-
-    public Mid0035(
-      int jobId,
-      JobStatus jobStatus,
-      JobBatchMode jobBatchMode,
-      int jobBatchSize,
-      int jobBatchCounter,
-      DateTime timestamp,
-      int jobCurrentStep,
-      int jobTotalNumberOfSteps,
-      int jobStepType,
-      int revision = 3,
-      int? noAckFlag = 0)
-      : this(jobId, jobStatus, jobBatchMode, jobBatchSize, jobBatchCounter, timestamp, revision, noAckFlag)
-    {
-      this.JobCurrentStep = jobCurrentStep;
-      this.JobTotalNumberOfSteps = jobTotalNumberOfSteps;
-      this.JobStepType = jobStepType;
-    }
-
-    public Mid0035(
-      int jobId,
-      JobStatus jobStatus,
-      JobBatchMode jobBatchMode,
-      int jobBatchSize,
-      int jobBatchCounter,
-      DateTime timestamp,
-      JobTighteningStatus jobTighteningStatus,
-      int revision = 4,
-      int? noAckFlag = 0)
-      : this(jobId, jobStatus, jobBatchMode, jobBatchSize, jobBatchCounter, timestamp, revision, noAckFlag)
-    {
-      this.JobTighteningStatus = jobTighteningStatus;
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      this.HandleRevision();
-      this.ProcessDataFields(package);
-      return (Mid) this;
-    }
-
-    public bool Validate(out IEnumerable<string> errors)
-    {
-      List<string> stringList = new List<string>();
-      if (this.HeaderData.Revision == 1)
-      {
-        if (this.JobId < 0 || this.JobId > 99)
-          stringList.Add(new ArgumentOutOfRangeException("JobId", "Range: 00-99").Message);
-      }
-      else if (this.JobId < 0 || this.JobId > 9999)
-        stringList.Add(new ArgumentOutOfRangeException("JobId", "Range: 0000-9999").Message);
-      if (this.JobBatchSize < 0 || this.JobBatchSize > 9999)
-        stringList.Add(new ArgumentOutOfRangeException("JobBatchSize", "Range: 0000-9999").Message);
-      if (this.JobBatchCounter < 0 || this.JobBatchCounter > 9999)
-        stringList.Add(new ArgumentOutOfRangeException("JobBatchCounter", "Range: 0000-9999").Message);
-      if (this.HeaderData.Revision == 3)
-      {
-        if (this.JobCurrentStep < 0 || this.JobCurrentStep > 999)
-          stringList.Add(new ArgumentOutOfRangeException("JobCurrentStep", "Range: 000-999").Message);
-        if (this.JobTotalNumberOfSteps < 0 || this.JobTotalNumberOfSteps > 999)
-          stringList.Add(new ArgumentOutOfRangeException("JobTotalNumberOfSteps", "Range: 000-999").Message);
-        if (this.JobStepType < 0 || this.JobStepType > 99)
-          stringList.Add(new ArgumentOutOfRangeException("JobStepType", "Range: 00-99").Message);
-      }
-      errors = (IEnumerable<string>) stringList;
-      return errors.Any<string>();
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public int JobId
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 2, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(1, 24, 1),
-            new DataField(2, 27, 1),
-            new DataField(3, 30, 4, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(4, 36, 4, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(5, 42, 19)
-          }
-        },
-        {
-          2,
-          new List<DataField>()
-        },
-        {
-          3,
-          new List<DataField>()
-          {
-            new DataField(6, 65, 3, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(7, 70, 3, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(8, 75, 2, '0', DataField.PaddingOrientations.LEFT_PADDED)
-          }
-        },
-        {
-          4,
-          new List<DataField>()
-          {
-            new DataField(9, 79, 2, ' ', DataField.PaddingOrientations.LEFT_PADDED)
-          }
-        },
-        {
-          5,
-          new List<DataField>()
-          {
-            new DataField(10, 83, 5, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(11, 90, 25, ' ', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(12, 117, 25, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(13, 144, 25, '0', DataField.PaddingOrientations.LEFT_PADDED),
-            new DataField(14, 171, 25, '0', DataField.PaddingOrientations.LEFT_PADDED)
-          }
+            get => GetField(1, DataFields.JobId).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.JobId).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
+        public JobStatus JobStatus
+        {
+            get => (JobStatus)GetField(1, DataFields.JobStatus).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.JobStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public JobBatchMode JobBatchMode
+        {
+            get => (JobBatchMode)GetField(1, DataFields.JobBatchMode).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.JobBatchMode).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int JobBatchSize
+        {
+            get => GetField(1, DataFields.JobBatchSize).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.JobBatchSize).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int JobBatchCounter
+        {
+            get => GetField(1, DataFields.JobBatchCounter).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.JobBatchCounter).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public DateTime TimeStamp
+        {
+            get => GetField(1, DataFields.Timestamp).GetValue(OpenProtocolConvert.ToDateTime);
+            set => GetField(1, DataFields.Timestamp).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        //Rev 3
+        public int JobCurrentStep
+        {
+            get => GetField(3, DataFields.JobCurrentStep).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(3, DataFields.JobCurrentStep).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int JobTotalNumberOfSteps
+        {
+            get => GetField(3, DataFields.JobTotalNumberOfSteps).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(3, DataFields.JobTotalNumberOfSteps).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int JobStepType
+        {
+            get => GetField(3, DataFields.JobStepType).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(3, DataFields.JobStepType).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        //Rev 4
+        public JobTighteningStatus JobTighteningStatus
+        {
+            get => (JobTighteningStatus)GetField(4, DataFields.JobTighteningStatus).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(4, DataFields.JobTighteningStatus).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        //Rev 5
+        public int JobSequenceNumber
+        {
+            get => GetField(5, DataFields.JobSequenceNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(5, DataFields.JobSequenceNumber).SetValue(OpenProtocolConvert.ToString, value);
+        }
+
+        public string VinNumber
+        {
+            get => GetField(5, DataFields.VinNumber).Value;
+            set => GetField(5, DataFields.VinNumber).SetValue(value);
+        }
+
+        public string IdentifierResultPart2
+        {
+            get => GetField(5, DataFields.IdentifierResultPart2).Value;
+            set => GetField(5, DataFields.IdentifierResultPart2).SetValue(value);
+        }
+
+        public string IdentifierResultPart3
+        {
+            get => GetField(5, DataFields.IdentifierResultPart3).Value;
+            set => GetField(5, DataFields.IdentifierResultPart3).SetValue(value);
+        }
+
+        public string IdentifierResultPart4
+        {
+            get => GetField(5, DataFields.IdentifierResultPart4).Value;
+            set => GetField(5, DataFields.IdentifierResultPart4).SetValue(value);
+        }
+
+        public Mid0035() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0035(Header header) : base(header)
+        {
+        }
+
+        public Mid0035(int revision) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision
+        })
+        {
+
+        }
+
+        public override string Pack()
+        {
+            HandleRevision();
+            return base.Pack();
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            HandleRevision();
+            ProcessDataFields(package);
+            return this;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.JobId, 20, 2),
+                                DataField.Number(DataFields.JobStatus, 24, 1),
+                                DataField.Number(DataFields.JobBatchMode, 27, 1),
+                                DataField.Number(DataFields.JobBatchSize, 30, 4),
+                                DataField.Number(DataFields.JobBatchCounter, 36, 4),
+                                DataField.Timestamp(DataFields.Timestamp, 42)
+                            }
+                },
+                {
+                    3, new  List<DataField>()
+                            {
+                                DataField.Number(DataFields.JobCurrentStep, 65, 3),
+                                DataField.Number(DataFields.JobTotalNumberOfSteps, 70, 3),
+                                DataField.Number(DataFields.JobStepType, 75, 2)
+                            }
+                },
+                {
+                    4, new  List<DataField>()
+                            {
+                                DataField.Number(DataFields.JobTighteningStatus, 79, 2)
+                            }
+                },
+                {
+                    5, new  List<DataField>()
+                    {
+                        DataField.Number(DataFields.JobSequenceNumber, 83, 5),
+                        DataField.String(DataFields.VinNumber, 90, 25),
+                        DataField.String(DataFields.IdentifierResultPart2, 117, 25),
+                        DataField.String(DataFields.IdentifierResultPart3, 144, 25),
+                        DataField.String(DataFields.IdentifierResultPart4, 171, 25),
+                    }
+                }
+            };
+        }
+
+        private void HandleRevision()
+        {
+            var jobIdField = GetField(1, DataFields.JobId);
+            if (Header.Revision > 1)
+            {
+                jobIdField.Size = 4;
+            }
+            else
+            {
+                jobIdField.Size = 2;
+            }
+
+            int index = jobIdField.Index + jobIdField.Size;
+            for (int i = (int)DataFields.JobStatus; i < RevisionsByFields[1].Count; i++)
+            {
+                var field = GetField(1, i);
+                field.Index = 2 + index;
+                index = field.Index + field.Size;
+            }
+        }
+
+        protected enum DataFields
+        {
+            //rev 1 and 2
+            JobId,
+            JobStatus,
+            JobBatchMode,
+            JobBatchSize,
+            JobBatchCounter,
+            Timestamp,
+            //rev 3
+            JobCurrentStep,
+            JobTotalNumberOfSteps,
+            JobStepType,
+            //rev 4
+            JobTighteningStatus,
+            //rev5
+            JobSequenceNumber,
+            VinNumber,
+            IdentifierResultPart2,
+            IdentifierResultPart3,
+            IdentifierResultPart4
+        }
     }
 
-    private void HandleRevision()
-    {
-      DataField field1 = this.GetField(1, 0);
-      field1.Size = this.HeaderData.Revision <= 1 ? 2 : 4;
-      int num = field1.Index + field1.Size;
-      for (int field2 = 1; field2 < this.RevisionsByFields[1].Count; ++field2)
-      {
-        DataField field3 = this.GetField(1, field2);
-        field3.Index = 2 + num;
-        num = field3.Index + field3.Size;
-      }
-    }
-  }
 }

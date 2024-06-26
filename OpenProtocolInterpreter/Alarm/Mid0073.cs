@@ -1,21 +1,32 @@
-﻿
-// Type: OpenProtocolInterpreter.Alarm.Mid0073
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Alarm
 {
-  public class Mid0073 : Mid, IAlarm, IIntegrator
-  {
-    private const int LAST_REVISION = 2;
-    public const int MID = 73;
-
-    public Mid0073()
-      : this(2)
+    /// <summary>
+    /// Alarm unsubscribe
+    /// <para>Reset the subscription for the controller alarms.</para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted or <see cref="Communication.Mid0004"/> Command error, Alarm subscription does not exist</para>
+    /// </summary>
+    public class Mid0073 : Mid, IAlarm, IIntegrator, IUnsubscription, IAcceptableCommand, IDeclinableCommand
     {
-    }
+        public const int MID = 73;
 
-    public Mid0073(int revision = 2)
-      : base(73, revision)
-    {
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.AlarmSubscriptionDoesntExists };
+
+        public Mid0073() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0073(Header header) : base(header)
+        {
+
+        }
+
+        public Mid0073(int revision) : base(MID, revision)
+        {
+
+        }
     }
-  }
 }

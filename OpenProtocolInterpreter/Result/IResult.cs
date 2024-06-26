@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.Result.IResult
-
-namespace OpenProtocolInterpreter.Result
+﻿namespace OpenProtocolInterpreter.Result
 {
-  public interface IResult
-  {
-  }
+    /// <summary>
+    /// Result message category. Every result mid must implement <see cref="IResult"/>.
+    /// </summary>
+    public interface IResult
+    {
+    }
 }

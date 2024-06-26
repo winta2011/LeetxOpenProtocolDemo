@@ -1,45 +1,34 @@
-﻿
-// Type: OpenProtocolInterpreter.Time.TimeMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.Time
 {
-  internal class TimeMessages : MessagesTemplate
-  {
-    public TimeMessages()
+    /// <summary>
+    /// Template for <see cref="ITime"/> implementers.
+    /// </summary>
+    internal class TimeMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public TimeMessages() : base()
         {
-          80,
-          new MidCompiledInstance(typeof (Mid0080))
-        },
-        {
-          81,
-          new MidCompiledInstance(typeof (Mid0081))
-        },
-        {
-          82,
-          new MidCompiledInstance(typeof (Mid0082))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0080.MID, new MidCompiledInstance(typeof(Mid0080)) },
+                { Mid0081.MID, new MidCompiledInstance(typeof(Mid0081)) },
+                { Mid0082.MID, new MidCompiledInstance(typeof(Mid0082)) }
+            };
         }
-      };
-    }
 
-    public TimeMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public TimeMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public TimeMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public TimeMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 79 && mid < 83;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 79 && mid < 83;
+    }
 }

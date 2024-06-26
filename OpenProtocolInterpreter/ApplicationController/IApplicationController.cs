@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.ApplicationController.IApplicationController
-
-namespace OpenProtocolInterpreter.ApplicationController
+﻿namespace OpenProtocolInterpreter.ApplicationController
 {
-  public interface IApplicationController
-  {
-  }
+    /// <summary>
+    /// Application Controller message category. Every application controller mid must implement <see cref="IApplicationController"/>.
+    /// </summary>
+    public interface IApplicationController
+    {
+    }
 }

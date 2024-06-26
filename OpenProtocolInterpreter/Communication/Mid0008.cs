@@ -1,94 +1,91 @@
-﻿
-// Type: OpenProtocolInterpreter.Communication.Mid0008
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.Communication
 {
-  public class Mid0008 : Mid, ICommunication, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 8;
-
-    public string SubscriptionMid
+    /// <summary>
+    /// Application data message subscription
+    /// <para>
+    ///     Start a subscription of data. This message is used for ALL subscription handling.
+    ///     When used it substitutes the use of all MID special subscription messages.
+    /// </para>
+    /// <para>
+    ///     NOTE! The Header Revision field is the revision of the MID 0008 itself NOT the revision of the data
+    ///     MID that is wanted to be subscribed for.
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Mid0005"/> Command accepted with the MID subscribed for or <see cref="Mid0004"/> Command error, 
+    ///         MID revision unsupported or Invalid data code and the MID subscribed for
+    /// </para>
+    /// </summary>
+    public class Mid0008 : Mid, ICommunication, IIntegrator
     {
-      get => this.GetField(1, 0).Value;
-      set => this.GetField(1, 0).SetValue(value);
-    }
+        public const int MID = 8;
 
-    public int WantedRevision
-    {
-      get => this.GetField(1, 1).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 1).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public int ExtraDataLength
-    {
-      get => this.GetField(1, 2).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      set
-      {
-        this.GetField(1, 2).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), value);
-      }
-    }
-
-    public string ExtraData
-    {
-      get => this.GetField(1, 3).Value;
-      set => this.GetField(1, 3).SetValue(value);
-    }
-
-    public Mid0008()
-      : base(8, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
-
-    public Mid0008(string subscriptionMid, int wantedRevision, string extraData)
-      : this()
-    {
-      this.SubscriptionMid = subscriptionMid;
-      this.WantedRevision = wantedRevision;
-      this.ExtraData = extraData;
-      this.ExtraDataLength = this.ExtraData.Length;
-    }
-
-    public override Mid Parse(string package)
-    {
-      this.HeaderData = this.ProcessHeader(package);
-      this.GetField(1, 3).Size = package.Length - 29;
-      this.ProcessDataFields(package);
-      return (Mid) this;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public string SubscriptionMid
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 4, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(1, 24, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(2, 27, 2, '0', DataField.PaddingOrientations.LEFT_PADDED, false),
-            new DataField(3, 29, 0, ' ', hasPrefix: false)
-          }
+            get => GetField(1, DataFields.SubscriptionMid).Value;
+            set => GetField(1, DataFields.SubscriptionMid).SetValue(value);
         }
-      };
-    }
+        public int WantedRevision
+        {
+            get => GetField(1, DataFields.WantedRevision).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.WantedRevision).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public int ExtraDataLength
+        {
+            get => GetField(1, DataFields.ExtraDataLength).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.ExtraDataLength).SetValue(OpenProtocolConvert.ToString, value);
+        }
+        public string ExtraData
+        {
+            get => GetField(1, DataFields.ExtraData).Value;
+            set => GetField(1, DataFields.ExtraData).SetValue(value);
+        }
 
-    public enum DataFields
-    {
-      SUBSCRIPTION_MID,
-      WANTED_REVISION,
-      EXTRA_DATA_LENGTH,
-      EXTRA_DATA,
+        public Mid0008() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+            
+        }
+
+        public Mid0008(Header header) : base(header)
+        {
+        }
+
+        public override Mid Parse(string package)
+        {
+            Header = ProcessHeader(package);
+            GetField(1, DataFields.ExtraData).Size = Header.Length - 29;
+            ProcessDataFields(package);
+            return this;
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.SubscriptionMid, 20, 4, false),
+                                DataField.Number(DataFields.WantedRevision, 24, 3, false),
+                                DataField.Number(DataFields.ExtraDataLength, 27, 2, false),
+                                DataField.Volatile(DataFields.ExtraData, 29, false)
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            SubscriptionMid,
+            WantedRevision,
+            ExtraDataLength,
+            ExtraData
+        }
     }
-  }
 }

@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.ParameterSet.IParameterSet
-
-namespace OpenProtocolInterpreter.ParameterSet
+﻿namespace OpenProtocolInterpreter.ParameterSet
 {
-  public interface IParameterSet
-  {
-  }
+    /// <summary>
+    /// Parameter set message category. Every parameter set mid must implement <see cref="IParameterSet"/>.
+    /// </summary>
+    public interface IParameterSet
+    {
+    }
 }

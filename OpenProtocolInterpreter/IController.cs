@@ -1,9 +1,9 @@
-﻿
-// Type: OpenProtocolInterpreter.IController
-
-namespace OpenProtocolInterpreter
+﻿namespace OpenProtocolInterpreter
 {
-  public interface IController
-  {
-  }
+    /// <summary>
+    /// Contract which every controller <see cref="Mid"/> message implements.
+    /// </summary>
+    public interface IController
+    {
+    }
 }

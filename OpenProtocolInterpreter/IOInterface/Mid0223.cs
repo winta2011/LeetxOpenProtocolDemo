@@ -1,59 +1,58 @@
-﻿
-// Type: OpenProtocolInterpreter.IOInterface.Mid0223
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.IOInterface
 {
-  public class Mid0223 : Mid, IIOInterface, IIntegrator
-  {
-    private readonly IValueConverter<int> _intConverter;
-    private const int LAST_REVISION = 1;
-    public const int MID = 223;
-
-    public DigitalInputNumber DigitalInputNumber
+    /// <summary>
+    /// Relay function unsubscribe
+    /// <para>
+    ///     Unsubscribe for a single relay function. The data field consists of three ASCII digits,
+    ///     the relay number, which corresponds to the specific relay function. The relay numbers can be 
+    ///     found in Table 101.
+    /// </para>    
+    /// <para>Message sent by: Integrator</para>
+    /// <para>Answer: <see cref="Communication.Mid0005"/> Command accepted or <see cref="Communication.Mid0004"/> Command error, The relay function subscription does not exist</para>
+    /// </summary>
+    public class Mid0223 : Mid, IIOInterface, IIntegrator, IUnsubscription, IAcceptableCommand, IDeclinableCommand
     {
-      get
-      {
-        return (DigitalInputNumber) this.GetField(1, 0).GetValue<int>(new Func<string, int>(this._intConverter.Convert));
-      }
-      set
-      {
-        this.GetField(1, 0).SetValue<int>(new Func<char, int, DataField.PaddingOrientations, int, string>(this._intConverter.Convert), (int) value);
-      }
-    }
+        public const int MID = 223;
 
-    public Mid0223()
-      : base(223, 1)
-    {
-      this._intConverter = (IValueConverter<int>) new Int32Converter();
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] { Error.RelayFunctionSubscriptionDoesntExists };
 
-    public Mid0223(DigitalInputNumber digitalInputNumber)
-      : this()
-    {
-      this.DigitalInputNumber = digitalInputNumber;
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public DigitalInputNumber DigitalInputNumber
         {
-          1,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 3, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
+            get => (DigitalInputNumber)GetField(1, DataFields.DigitalInputNumber).GetValue(OpenProtocolConvert.ToInt32);
+            set => GetField(1, DataFields.DigitalInputNumber).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      DIGITAL_INPUT_NUMBER,
+        public Mid0223() : this(new Header()
+        {
+            Mid = MID,
+            Revision = DEFAULT_REVISION
+        })
+        {
+
+        }
+
+        public Mid0223(Header header) : base(header)
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    1, new List<DataField>()
+                    {
+                        DataField.Number(DataFields.DigitalInputNumber, 20, 3, false)
+                    }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            DigitalInputNumber
+        }
     }
-  }
 }

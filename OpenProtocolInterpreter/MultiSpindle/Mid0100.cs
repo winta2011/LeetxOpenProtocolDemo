@@ -1,84 +1,95 @@
-﻿
-// Type: OpenProtocolInterpreter.MultiSpindle.Mid0100
-using OpenProtocolInterpreter.Converters;
-using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenProtocolInterpreter.MultiSpindle
 {
-  public class Mid0100 : Mid, IMultiSpindle, IIntegrator
-  {
-    private readonly IValueConverter<long> _longConverter;
-    private readonly IValueConverter<bool> _boolConverter;
-    private const int LAST_REVISION = 4;
-    public const int MID = 100;
-
-    public long DataNumberSystem
+    /// <summary>
+    /// Multi-spindle result subscribe
+    /// <para>
+    ///     A subscription for the multi-spindle status. For Power Focus, the subscription must 
+    ///     be addressed to a sync Master. 
+    /// </para>    
+    /// <para>
+    ///     This telegram is also used for a PowerMACS 4000 system 
+    ///     running a press instead of a spindle. A press system only supports revision 4 and higher 
+    ///     of the telegram and will answer with <see cref="Communication.Mid0004"/>, MID revision unsupported if a subscription 
+    ///     is made with a lower revision.
+    /// </para>
+    /// <para>Message sent by: Integrator</para>
+    /// <para>
+    ///     Answer: <see cref="Communication.Mid0005"/> Command accepted or 
+    ///     <see cref="Communication.Mid0004"/> Command error, Controller is not a sync master/station controller, 
+    ///     Multi-spindle result subscription already exists or MID revision unsupported
+    /// </para>
+    /// </summary>
+    public class Mid0100 : Mid, IMultiSpindle, IIntegrator, ISubscription, IAcceptableCommand, IDeclinableCommand
     {
-      get
-      {
-        return this.GetField(2, 0).GetValue<long>(new Func<string, long>(this._longConverter.Convert));
-      }
-      set
-      {
-        this.GetField(2, 0).SetValue<long>(new Func<char, int, DataField.PaddingOrientations, long, string>(this._longConverter.Convert), value);
-      }
-    }
+        public const int MID = 100;
 
-    public bool SendOnlyNewData
-    {
-      get
-      {
-        return this.GetField(3, 1).GetValue<bool>(new Func<string, bool>(this._boolConverter.Convert));
-      }
-      set
-      {
-        this.GetField(3, 1).SetValue<bool>(new Func<char, int, DataField.PaddingOrientations, bool, string>(this._boolConverter.Convert), value);
-      }
-    }
+        public IEnumerable<Error> DocumentedPossibleErrors => new Error[] 
+        { 
+            Error.ControllerIsNotASyncMasterOrStationController,
+            Error.MultiSpindleResultSubscriptionAlreadyExists,
+            Error.MidRevisionUnsupported
+        };
 
-    public Mid0100()
-      : this(4)
-    {
-    }
-
-    public Mid0100(int revision = 4)
-      : base(100, revision)
-    {
-      this._longConverter = (IValueConverter<long>) new Int64Converter();
-      this._boolConverter = (IValueConverter<bool>) new BoolConverter();
-    }
-
-    protected override Dictionary<int, List<DataField>> RegisterDatafields()
-    {
-      return new Dictionary<int, List<DataField>>()
-      {
+        public long DataNumberSystem
         {
-          1,
-          new List<DataField>()
-        },
-        {
-          2,
-          new List<DataField>()
-          {
-            new DataField(0, 20, 10, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
-        },
-        {
-          3,
-          new List<DataField>()
-          {
-            new DataField(1, 30, 1, '0', DataField.PaddingOrientations.LEFT_PADDED, false)
-          }
+            get => GetField(2, DataFields.DataNumberSystem).GetValue(OpenProtocolConvert.ToInt64);
+            set => GetField(2, DataFields.DataNumberSystem).SetValue(OpenProtocolConvert.ToString, value);
         }
-      };
-    }
 
-    public enum DataFields
-    {
-      DATA_NUMBER_SYSTEM,
-      SEND_ONLY_NEW_DATA,
+        public bool SendOnlyNewData
+        {
+            get => GetField(3, DataFields.SendOnlyNewData).GetValue(OpenProtocolConvert.ToBoolean);
+            set => GetField(3, DataFields.SendOnlyNewData).SetValue(OpenProtocolConvert.ToString, value);
+        }
+
+        public Mid0100() : this(DEFAULT_REVISION)
+        {
+
+        }
+
+        public Mid0100(Header header) : base(header)
+        {
+        }
+
+        public Mid0100(bool noAckFlag = false) : this(DEFAULT_REVISION, noAckFlag)
+        {
+
+        }
+
+        public Mid0100(int revision, bool noAckFlag = false) : this(new Header()
+        {
+            Mid = MID,
+            Revision = revision,
+            NoAckFlag = noAckFlag
+        })
+        {
+        }
+
+        protected override Dictionary<int, List<DataField>> RegisterDatafields()
+        {
+            return new Dictionary<int, List<DataField>>()
+            {
+                {
+                    2, new List<DataField>()
+                            {
+                                DataField.Number(DataFields.DataNumberSystem, 20, 10, false),
+                            }
+                },
+                {
+                    3, new List<DataField>()
+                            {
+                                DataField.Boolean(DataFields.SendOnlyNewData, 30, false),
+                            }
+                }
+            };
+        }
+
+        protected enum DataFields
+        {
+            DataNumberSystem,
+            SendOnlyNewData
+        }
     }
-  }
 }

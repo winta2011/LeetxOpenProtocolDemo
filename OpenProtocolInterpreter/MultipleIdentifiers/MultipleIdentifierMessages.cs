@@ -1,65 +1,39 @@
-﻿
-// Type: OpenProtocolInterpreter.MultipleIdentifiers.MultipleIdentifierMessages
-using OpenProtocolInterpreter.Messages;
+﻿using OpenProtocolInterpreter.Messages;
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenProtocolInterpreter.MultipleIdentifiers
 {
-  internal class MultipleIdentifierMessages : MessagesTemplate
-  {
-    public MultipleIdentifierMessages()
+    /// <summary>
+    /// Template for <see cref="IMultipleIdentifier"/> implementers.
+    /// </summary>
+    internal class MultipleIdentifierMessages : MessagesTemplate
     {
-      this._templates = (IDictionary<int, MidCompiledInstance>) new Dictionary<int, MidCompiledInstance>()
-      {
+        public MultipleIdentifierMessages() : base()
         {
-          150,
-          new MidCompiledInstance(typeof (Mid0150))
-        },
-        {
-          151,
-          new MidCompiledInstance(typeof (Mid0151))
-        },
-        {
-          152,
-          new MidCompiledInstance(typeof (Mid0152))
-        },
-        {
-          153,
-          new MidCompiledInstance(typeof (Mid0153))
-        },
-        {
-          154,
-          new MidCompiledInstance(typeof (Mid0154))
-        },
-        {
-          155,
-          new MidCompiledInstance(typeof (Mid0155))
-        },
-        {
-          156,
-          new MidCompiledInstance(typeof (Mid0156))
-        },
-        {
-          157,
-          new MidCompiledInstance(typeof (Mid0157))
+            _templates = new Dictionary<int, MidCompiledInstance>()
+            {
+                { Mid0150.MID, new MidCompiledInstance(typeof(Mid0150)) },
+                { Mid0151.MID, new MidCompiledInstance(typeof(Mid0151)) },
+                { Mid0152.MID, new MidCompiledInstance(typeof(Mid0152)) },
+                { Mid0153.MID, new MidCompiledInstance(typeof(Mid0153)) },
+                { Mid0154.MID, new MidCompiledInstance(typeof(Mid0154)) },
+                { Mid0155.MID, new MidCompiledInstance(typeof(Mid0155)) },
+                { Mid0156.MID, new MidCompiledInstance(typeof(Mid0156)) },
+                { Mid0157.MID, new MidCompiledInstance(typeof(Mid0157)) }
+            };
         }
-      };
-    }
 
-    public MultipleIdentifierMessages(IEnumerable<Type> selectedMids)
-      : this()
-    {
-      this.FilterSelectedMids(selectedMids);
-    }
+        public MultipleIdentifierMessages(IEnumerable<Type> selectedMids) : this()
+        {
+            FilterSelectedMids(selectedMids);
+        }
 
-    public MultipleIdentifierMessages(InterpreterMode mode)
-      : this()
-    {
-      this.FilterSelectedMids(mode);
-    }
+        public MultipleIdentifierMessages(InterpreterMode mode) : this()
+        {
+            FilterSelectedMids(mode);
+        }
 
-    public override bool IsAssignableTo(int mid) => mid > 149 && mid < 158;
-  }
+        public override bool IsAssignableTo(int mid) => mid > 149 && mid < 158;
+    }
 }
