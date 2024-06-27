@@ -1,10 +1,14 @@
 ﻿
 using OpenProtocolInterpreter;
+using OpenProtocolInterpreter.Alarm;
 using OpenProtocolInterpreter.Communication;
 using OpenProtocolInterpreter.Curve;
+using OpenProtocolInterpreter.Job;
 using OpenProtocolInterpreter.KeepAlive;
 using OpenProtocolInterpreter.ParameterSet;
 using OpenProtocolInterpreter.Tightening;
+using OpenProtocolInterpreter.Time;
+using OpenProtocolInterpreter.Vin;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -27,7 +31,7 @@ namespace Leetx.OpenProtocol
         private NetworkStream networkStream;
         private MidInterpreter midInterpreter;
         private byte[] TxBuf = new byte[4096 * 2];
-        private string sQueryResponse = "";
+        private byte[]  queryResponseBuff = new byte[1];
         private bool gGlobalRunFalg = true;
         private bool bRunFlag = false;
         private string toolName;
@@ -78,7 +82,18 @@ namespace Leetx.OpenProtocol
             mids["0011"] = new Mid0011();
             mids["0013"] = new Mid0013();
             mids["0015"] = new Mid0015();
+            mids["0031"] = new Mid0031();
+            mids["0033"] = new Mid0033();
+            mids["0035"] = new Mid0035();
+            mids["0052"] = new Mid0052();
             mids["0061"] = new Mid0061();
+            mids["0065"] = new Mid0065(); 
+            mids["0071"] = new Mid0071();
+            mids["0074"] = new Mid0074();
+            mids["0076"] = new Mid0076();
+            mids["0081"] = new Mid0081();
+
+            mids["7404"] = new Mid7404();
             mids["7410"] = new Mid7410();
 
         }
@@ -125,11 +140,12 @@ namespace Leetx.OpenProtocol
                         sn = mid0002.ControllerSerialNumber;
                     }
                     ConnnectStatus = "OP通讯已建立。发送订阅 Mid0060...";
-                    bool subOk = await Subscribe(new Mid0060(1, false).Pack());//订阅结果
+                    bool subOk = await Subscribe(new Mid0060(3).Pack());//订阅结果
                     {
                         ConnnectStatus = "发送曲线订阅7408";
                         subOk = await Subscribe(new Mid7408(2, 0).Pack()); //订阅曲线
-                        subOk = await Subscribe(new Mid0014(2).Pack()); //订阅Pset
+                        subOk = await Subscribe(new Mid7402().Pack()); //订阅曲线
+                     //  subOk = await Subscribe(new Mid0014(2).Pack()); //订阅Pset
 
                     }
                     keepAliveWatch = DateTime.Now;
@@ -266,37 +282,58 @@ namespace Leetx.OpenProtocol
         void HandleRxBuff(byte[] buff)
         {
             int frameLen = 0;
-            string frameAscii = Encoding.ASCII.GetString(buff);
-            bool praseOk = int.TryParse(Encoding.ASCII.GetString(buff.ToArray(), 0, 4), out frameLen);
-            string midNo = Encoding.ASCII.GetString(buff.ToArray(), 4, 4);
-            if (praseOk == false)
-            {
-                return;
-            }
-            Console.WriteLine($"{ip}收到 Mid {midNo} 报文: {frameAscii} ");
+            //string frameAscii = Encoding.ASCII.GetString(buff);
+            bool praseOk = int.TryParse(Encoding.ASCII.GetString(buff, 0, 4), out frameLen);
+            string midNo = Encoding.ASCII.GetString(buff, 4, 4);
+          //  Console.WriteLine($"{ip}收到 Mid {midNo} 报文: {frameAscii} ");
             switch (midNo)
             {
                 case "0061":  //结果数据
-                    var mid0061 = PraseMid(frameAscii);
+                    var mid0061 = PraseMid(buff);
                     WriteMid(new Mid0062().Pack()); // mid0061 .Header .Revision
                     TightingProcessEvent?.BeginInvoke( Mid0061.MID, mid0061, (x) =>
                     {
                         Console.WriteLine("----> Tighting Result Completed !");
                     }, null);
                     break;
+                case "0071":  //结果数据
+                    var mid0071 = PraseMid(buff);
+                    TightingProcessEvent?.BeginInvoke(Mid0071.MID, mid0071, (x) =>
+                    {
+                        Console.WriteLine("----> Alarm !");
+                    }, null);
+                    break;
+                case "0074":  //结果数据
+                    var mid0074 = PraseMid(buff);
+                    TightingProcessEvent?.BeginInvoke(Mid0071.MID, mid0074, (x) =>
+                    {
+                        Console.WriteLine("----> Alarm !");
+                    }, null);
+                    break;
                 case "7404":
-                    Console.WriteLine($"{DateTime.Now.Second}.{DateTime.Now.Millisecond}");
+                    var mid7404 = PraseMid(buff);
+                    TightingProcessEvent?.BeginInvoke(Mid7404.MID, mid7404, x =>
+                    {
+                        Console.WriteLine("----> mid7404 Completed !");
+                    }, null);
                     break;
                 case "7410": //曲线数据 //处理曲线帧解析函数 
-                    var mid7410 = PraseMid(frameAscii);
+                    var mid7410 = PraseMid(buff);
                     TightingProcessEvent?.BeginInvoke( Mid7410.MID , mid7410, x =>
                     {
                         Console.WriteLine("----> Cureve Completed !");
                     }, null);
                     break;
                 case "0015": //激活的Pset变更
-                    var mid15 = PraseMid(frameAscii);
+                    var mid15 = PraseMid(buff);
                     TightingProcessEvent?.BeginInvoke( Mid0015.MID , mid15 , x =>
+                    {
+                        Console.WriteLine("----> Cureve Completed !");
+                    }, null);
+                    break;
+                case "0035": //激活的Job变更
+                    var mid = PraseMid(buff);
+                    TightingProcessEvent?.BeginInvoke(Mid0035.MID, mid, x =>
                     {
                         Console.WriteLine("----> Cureve Completed !");
                     }, null);
@@ -306,35 +343,49 @@ namespace Leetx.OpenProtocol
                     //  Console.WriteLine("收到心跳响应...");
                     break;
                 default:
-                    sQueryResponse = frameAscii;
+                    queryResponseBuff = buff;
                     sem.Release();
                     break;
             }
         }
 
-        private Mid PraseMid(string buff)
+        private Mid PraseMid(byte[] buff)
         {
-            var key = buff.Substring(4, 4);
+            var key = Encoding.ASCII.GetString(buff,4, 4);
             if (mids.ContainsKey(key))
-                return  mids[key]?.Parse(Encoding.ASCII.GetBytes(buff));
+            {
+                return ((Mid)System.Activator.CreateInstance(mids[key].GetType()))?.Parse(buff);
+            }
             return null;
         }
 
         public async Task WriteMidAsync(string str, int timeout = Timeout)
         {
             Console.WriteLine($"发送 指令 {str} ");
-            byte[] bytes = Encoding.ASCII.GetBytes(str);
-            Array.Copy(bytes, TxBuf, bytes.Length);
-            TxBuf[bytes.Length] = 0;
-            await networkStream.WriteAsync(TxBuf, 0, bytes.Length + 1);
+            byte[] bytes = Encoding.ASCII.GetBytes(str+"\0");
+            foreach (var item in bytes)
+            {
+                Console.Write(item.ToString("X2"));
+                Console.Write(" ");
+            }
+            Console.WriteLine(" ");
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine(" ");
+
+            await networkStream.WriteAsync(bytes, 0, bytes.Length );
         }
 
         private void WriteMid(string str, int timeout = Timeout)
         {
-            byte[] bytes = Encoding.ASCII.GetBytes(str);
-            Array.Copy(bytes, TxBuf, bytes.Length);
-            TxBuf[bytes.Length] = 0;
-            networkStream.WriteAsync(TxBuf, 0, bytes.Length + 1);
+            byte[] bytes = Encoding.ASCII.GetBytes(str+"\0");
+            foreach (var item in bytes)
+            {
+                Console.Write(item.ToString("X2"));
+                Console.Write(" ");
+            }
+            Console.WriteLine(" ");
+            Console.WriteLine(" ");
+            networkStream.WriteAsync(bytes, 0, bytes.Length);
         }
 
         /// <summary>
@@ -349,7 +400,7 @@ namespace Leetx.OpenProtocol
             bool bOK = await sem.WaitAsync(timeout);
             if (bOK)
             {
-                return PraseMid(sQueryResponse);
+                return PraseMid(queryResponseBuff);
             }
             return null;
         }
@@ -365,7 +416,7 @@ namespace Leetx.OpenProtocol
             bool bOK = await sem.WaitAsync(timeout);
             if (bOK)
             {
-                return PraseMid(sQueryResponse);
+                return PraseMid(queryResponseBuff);
             }
             return null;
         }
@@ -398,8 +449,7 @@ namespace Leetx.OpenProtocol
                     }
                     if (rxMid.Header.Mid == 4)
                     {
-                        var mid0004 = (Mid0004)midInterpreter.Parse(sQueryResponse);
-                        if (mid0004.ErrorCode == Error.SubscriptionDoesntExists)
+                        if (rxMid is Mid0004  mid4 && mid4.ErrorCode == Error.SubscriptionAlreadyExists)
                         {
                             return true;
                         }

@@ -60,7 +60,6 @@ namespace OpenProtocolInterpreter.Curve
         public List<double> Angle { get; private set; }
 
         public List<double> Speed { get; private set; }
-        public CurveData RawCurveData { get; private set; }
 
         public Mid7410()
           : this(2)
@@ -103,68 +102,12 @@ namespace OpenProtocolInterpreter.Curve
 
        
 
-        private void CurveDecode()
-        {
-            byte[] rawData = this.RawCurveData.rawData;
-            byte num1 = 0;
-            int index1 = 0;
-            foreach (byte num2 in this.RawCurveData.rawData)
-            {
-                if (num1 == byte.MaxValue)
-                {
-                    if (num2 == (byte)254)
-                    {
-                        this.RawCurveData.rawData[index1] = (byte)0;
-                        ++index1;
-                    }
-                    else
-                    {
-                        if (num2 != byte.MaxValue)
-                            throw new NotSupportedException();
-                        this.RawCurveData.rawData[index1] = byte.MaxValue;
-                        ++index1;
-                    }
-                }
-                else
-                {
-                    switch (num2)
-                    {
-                        case 0:
-                            throw new NotSupportedException();
-                        case byte.MaxValue:
-                            break;
-                        default:
-                            this.RawCurveData.rawData[index1] = (byte)((uint)num2 - 1U);
-                            ++index1;
-                            break;
-                    }
-                }
-                num1 = num2;
-            }
-            int num3 = index1;
-            int curveIndex = 0;
-            int num4 = num3 % 6;
-            for (int index2 = 0; index2 < num4; ++index2)
-            {
-                short t = System.BitConverter.ToInt16(this.RawCurveData.rawData, curveIndex);//.Skip<byte>(curveIndex).Take<byte>(2).Reverse<byte>().ToArray<byte>(), 0);
-                curveIndex += 2;
-                this.Torque.Add(t * (float)this.TorqueCoefficient);
-                int andle = System.BitConverter.ToInt32(this.RawCurveData.rawData, curveIndex);
-                curveIndex += 4;
-                this.Angle.Add(andle * (float)this.AngleCoefficient);
-                if (this.Header.Revision == 2)
-                {
-                    int spd = System.BitConverter.ToInt32(this.RawCurveData.rawData, curveIndex);
-                    curveIndex += 4;
-                    this.Speed.Add(spd * 0.1f);
-                }
-            }
-        }
+       
         public override Mid Parse(byte[] frame)
         {
 
             byte[] header = frame.Skip(0).Take(20).ToArray();
-            byte[] data = frame.Skip(20).Take(frame.Length - 20).ToArray();
+            byte[] dataArray = frame.Skip(20).Take(frame.Length - 20).ToArray();
             //帧头的解析
             int Length = int.Parse(Encoding.ASCII.GetString(header.Skip(0).Take(4).ToArray()));
             int Mid = int.Parse(Encoding.ASCII.GetString(header.Skip(4).Take(4).ToArray()));
@@ -182,14 +125,12 @@ namespace OpenProtocolInterpreter.Curve
             try
             {
                 //1.数据信息
-                byte[] dataArray = data;
                 m7410.ChannelId = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(2).Take(2).ToArray()));
                 m7410.ParameterSetId = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(6).Take(3).ToArray()));   //pset号
                 if (Revision == 2)
                 {
                     m7410.TorqueCoefficient = float.Parse(Encoding.ASCII.GetString(dataArray.Skip(39).Take(14).ToArray()));  //扭矩系数
                     m7410.AngleCoefficient = float.Parse(Encoding.ASCII.GetString(dataArray.Skip(55).Take(14).ToArray()));   //角度系数
-
                     m7410.NumMeasurementPoints = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(87).Take(4).ToArray()));   //点数
                     m7410.NumSegments = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(93).Take(2).ToArray()));  //分了几帧
                     m7410.SegmentID = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(97).Take(2).ToArray()));  //当前帧数
@@ -241,20 +182,28 @@ namespace OpenProtocolInterpreter.Curve
                 }
                 else
                 {
-                    d[dindex++] = (byte)(oriData[i] - 1);
+                    d[dindex++] = (byte)(oriData[i] -1);
                 }
             }
-   
+            try
+            {
 
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
             switch (m7410.Header.Revision)
             {
+
                 case 1:
                     {
                         for (int j = 0; j < dindex - 1;)
                         {
-                            m7410.Torque.Add(System.BitConverter.ToInt16(d, j) *0.01);
+                            m7410.Torque.Add(BitConverter.ToInt16(d, j) *0.01);
                             j += 2;
-                            m7410.Angle.Add(System.BitConverter.ToInt32(d, j) * 0.1);
+                            m7410.Angle.Add(BitConverter.ToInt32(d, j) * 0.1);
                             j += 4;
                         }
                     }
@@ -263,11 +212,11 @@ namespace OpenProtocolInterpreter.Curve
                     {
                         for (int j = 0; j < dindex - 1; )
                         {
-                            m7410.Torque.Add(System.BitConverter.ToInt16(d, j) * 0.01);
+                            m7410.Torque.Add(BitConverter.ToInt16(d, j) * 0.01);
                             j += 2;
-                            m7410.Angle.Add(System.BitConverter.ToInt32(d, j) * 0.1);
+                            m7410.Angle.Add(BitConverter.ToInt32(d, j) * 0.1);
                             j += 4;
-                            m7410.Speed.Add(System.BitConverter.ToInt16(d, j) * 0.1);
+                            m7410.Speed.Add(BitConverter.ToInt16(d, j) * 0.1);
                             j += 2;
                         }
                     }
