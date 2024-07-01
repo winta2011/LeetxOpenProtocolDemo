@@ -7,7 +7,11 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         x:Name="app"
-        Title="{Binding ConnectStatus, StringFormat=LeetxOpDemo :{0}}" Height="860" Width="1120">
+        Icon=""
+        Title="{Binding ConnectStatus, StringFormat=LeetxOpDemo :{0}}" 
+        WindowStyle="ThreeDBorderWindow" 
+        ResizeMode="CanMinimize"
+        Height="900" Width="1132">
     <Window.DataContext >
         <local:OpDemoViewModel />
     </Window.DataContext>
@@ -19,23 +23,23 @@
     <StackPanel HorizontalAlignment="Stretch"   Orientation="Vertical">
         <!-- 按钮 -->
         <WrapPanel HorizontalAlignment="Center"  Height="246" Orientation="Horizontal"   >
-            <GroupBox Width="260" Height="120" Margin="1"
+            <GroupBox Width="280" Height="120" Margin="1"
                       Header="连接"
                       materialDesign:GroupBoxAssist.HeaderPadding="4"
                       Padding="0"
                       Style="{StaticResource MaterialDesignGroupBox}">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Margin="1,0,0,3">
-                        <Button  Width="92" Height="42" Margin="1,1,0,2"
+                        <Button  Width="110" Height="42" Margin="1,1,0,2"
                              Content="连接" Command="{Binding CommandOpenOp }"
                              Style="{StaticResource MaterialDesignRaisedDarkButton}"
                              ToolTip="根据IP和端口号连接OP服务端" />
-                        <Button  Width="92" Height="42" Margin="1,3,0,2" Background="Red"
+                        <Button  Width="110" Height="42" Margin="1,3,0,2" Background="Red"
                              Content="关闭" Command="{Binding CommandCloseOp }"
                              Style="{StaticResource MaterialDesignRaisedDarkButton}"
                              ToolTip="断开Op连接" />
                     </StackPanel>
-                    <StackPanel>
+                    <StackPanel Margin="10,0,0,0">
                         <TextBox Width="136" Height="42" VerticalAlignment="Bottom" 
                                  materialDesign:HintAssist.Hint="IP:"
                                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -110,25 +114,25 @@
                 </StackPanel>
             </GroupBox>
             <!-- 使能 -->
-            <GroupBox Width="260" Height="120" Margin="1"
+            <GroupBox Width="280" Height="120" Margin="1"
             Header="使能与报警"
             materialDesign:GroupBoxAssist.HeaderPadding="4"
             Padding="0"
             Style="{StaticResource MaterialDesignGroupBox}">
-                <WrapPanel Orientation="Vertical" Margin="10,0,0,0" >
-                    <Button  Width="116" Height="42" Margin="2"
+                <WrapPanel Orientation="Vertical" Margin="5,0,0,0" >
+                    <Button  Width="130" Height="42" Margin="2"
                         Content="工具使能" Command="{Binding CommandEnableTools }"
                         Style="{StaticResource MaterialDesignRaisedDarkButton}"
                         ToolTip="工具使能,运行工具运行" />
-                    <Button  Width="116" Height="42" Margin="1"
+                    <Button  Width="130" Height="42" Margin="2"
                           Content="禁止工具使能" Command="{Binding CommandDisableTools}"
                           Style="{StaticResource MaterialDesignRaisedDarkButton}"
                           ToolTip="禁止工具使能,工具不允许动作,且Op断连后自动锁定工具" />
-                    <Button  Width="116" Height="42" Margin="2"
+                    <Button  Width="130" Height="42" Margin="4,2,2,2"
                          Content="报警订阅" Command="{Binding CommandSubscribeAlarm }"
                          Style="{StaticResource MaterialDesignRaisedDarkButton}"
                          ToolTip="报警订阅" />
-                    <Button  Width="116" Height="42" Margin="1"
+                    <Button  Width="130" Height="42"  Margin="4,2,2,2"
                            Content="取消报警订阅" Command="{Binding CommandUnsubscribeAlarm}"
                            Style="{StaticResource MaterialDesignRaisedDarkButton}"
                            ToolTip="取消报警订阅" />
@@ -284,25 +288,24 @@
                 </ListView>
                 <Rectangle Fill="Black" Height="2" Margin="1"  />
                 <TextBox    Height="140" materialDesign:HintAssist.FloatingScale="1.2"
-         VerticalAlignment="Top"
-         materialDesign:HintAssist.Hint="Hex:"
-         AcceptsReturn="True"
-         Style="{StaticResource MaterialDesignFilledTextBox}"
-         TextWrapping="Wrap"
-         Text="{Binding SelectedItem.Buff , Converter={local:ByteBuffer2HexStrConverter} }"
-         VerticalScrollBarVisibility="Auto" />
+                             VerticalAlignment="Top"
+                             materialDesign:HintAssist.Hint="Hex:"
+                             AcceptsReturn="True"
+                             Style="{StaticResource MaterialDesignFilledTextBox}"
+                             TextWrapping="Wrap"
+                             Text="{Binding SelectedItem.Buff , Converter={local:ByteBuffer2HexStrConverter} }"
+                             VerticalScrollBarVisibility="Auto" />
             </StackPanel>
             <TextBox  Grid.Column="1"  
-                      VerticalAlignment="Stretch"
                       VerticalContentAlignment="Top"
                       materialDesign:HintAssist.Hint="Mid属性:"
                       Padding="5"
-                      Height="{Binding Source={RelativeSource AncestorType=Grid}, Path=ActualHeight}"
+                      Height="{Binding ElementName=app, Path=ActualHeight ,Converter={local:ListViewHeightConverter},ConverterParameter=140 }"
                       TextWrapping="Wrap"
                       Text="{Binding SelectedItem.Buff, Converter={local:ByteBuffer2MidStrConverter}}"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto" />
-            <Rectangle Grid.Column="1" HorizontalAlignment="Left"   Fill="Black" Height="{Binding Source={RelativeSource AncestorType=Grid}, Path=ActualHeight}" Margin="1,0,0,0" Width="1" />
+            <Rectangle Grid.Column="1" HorizontalAlignment="Left"   Fill="Black"  Margin="1,0,0,0" Width="1" />
 
         </Grid>
 

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Markup;
 using OpenProtocolInterpreter;
@@ -28,6 +26,10 @@ namespace Leetx.OpenProtocolDemo
         {
             if (value is double h && h > 0)
             {
+                if(parameter  != null && parameter is string s)
+                {
+                    return h - 430+ double.Parse(s);
+                }
                 return h - 430;
             }
             return 300;

@@ -1,5 +1,4 @@
 ﻿using Leetx.OpenProtocol;
-using OpenProtocolInterpreter;
 using OpenProtocolInterpreter.Alarm;
 using OpenProtocolInterpreter.Curve;
 using OpenProtocolInterpreter.Job;
@@ -10,8 +9,6 @@ using OpenProtocolInterpreter.Time;
 using OpenProtocolInterpreter.Tool;
 using OpenProtocolInterpreter.Vin;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
