@@ -8,10 +8,15 @@
         mc:Ignorable="d"
         x:Name="app"
         Icon ="automation96.ico"
-        Title="{Binding ConnectStatus, StringFormat=LeetxOpDemo :{0}}" 
         WindowStyle="ThreeDBorderWindow" 
         ResizeMode="CanMinimize"
         Height="900" Width="1132">
+    <Window.Title>
+        <MultiBinding StringFormat="LeetxOpenProtocolDemo : [{0}] {1} ">
+            <Binding   Path="AppVersion" />
+            <Binding   Path="ConnectStatus"/>
+        </MultiBinding>
+    </Window.Title>
     <Window.DataContext >
         <local:OpDemoViewModel />
     </Window.DataContext>

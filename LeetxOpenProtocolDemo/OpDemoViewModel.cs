@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace Leetx.OpenProtocolDemo
 {
@@ -111,6 +112,13 @@ namespace Leetx.OpenProtocolDemo
 			set { _Port = value; OnPropertyChanged(); }
 		}
 		private int _Port=9101;
+
+
+		public string AppVersion
+		{
+			get { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
+		}
+
 
 
 	}
