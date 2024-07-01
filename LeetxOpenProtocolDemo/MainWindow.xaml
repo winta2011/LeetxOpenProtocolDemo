@@ -1,0 +1,310 @@
+﻿<Window x:Class="Leetx.OpenProtocolDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Leetx.OpenProtocolDemo"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        mc:Ignorable="d"
+        x:Name="app"
+        Title="{Binding ConnectStatus, StringFormat=LeetxOpDemo :{0}}" Height="860" Width="1120">
+    <Window.DataContext >
+        <local:OpDemoViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Height" Value="24"/>
+        </Style>
+    </Window.Resources>
+    <StackPanel HorizontalAlignment="Stretch"   Orientation="Vertical">
+        <!-- 按钮 -->
+        <WrapPanel HorizontalAlignment="Center"  Height="246" Orientation="Horizontal"   >
+            <GroupBox Width="260" Height="120" Margin="1"
+                      Header="连接"
+                      materialDesign:GroupBoxAssist.HeaderPadding="4"
+                      Padding="0"
+                      Style="{StaticResource MaterialDesignGroupBox}">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Margin="1,0,0,3">
+                        <Button  Width="92" Height="42" Margin="1,1,0,2"
+                             Content="连接" Command="{Binding CommandOpenOp }"
+                             Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                             ToolTip="根据IP和端口号连接OP服务端" />
+                        <Button  Width="92" Height="42" Margin="1,3,0,2" Background="Red"
+                             Content="关闭" Command="{Binding CommandCloseOp }"
+                             Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                             ToolTip="断开Op连接" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBox Width="136" Height="42" VerticalAlignment="Bottom" 
+                                 materialDesign:HintAssist.Hint="IP:"
+                                       Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                        Text="{Binding IpAddr}" />
+                        <TextBox Width="136" Height="42" VerticalAlignment="Bottom" 
+                                 materialDesign:HintAssist.Hint="Port:" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                        Text="{Binding Port }" />
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+            <!--    Pset     -->
+            <GroupBox Width="460" Height="120" Margin="1"
+                      Header="Pset"
+                      materialDesign:GroupBoxAssist.HeaderPadding="4"
+                      Padding="0"
+                      Style="{StaticResource MaterialDesignGroupBox}">
+                <StackPanel Orientation="Horizontal" >
+                    <WrapPanel Width="360" Height="100"  Orientation="Horizontal" >
+                        <Button  Width="115" Height="42" Margin="1"
+                                  Content="可用Pset列表" Command="{Binding CommandGetPsetList }"
+                                  Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                                  ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                                Content="订阅当前Pset" Command="{Binding CommandSubscribePset}"
+                                Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                                ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                                  Content="取消订阅Pset" Command="{Binding CommandUnsubscribePset}"
+                                  Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                                  ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                               Content="获取Pset信息" Command="{Binding CommandGetPset  }"
+                               Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                               ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                               Content="切换当前Pset" Command="{Binding CommandChangeControllerCurPset  }"
+                               Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                               ToolTip="" />
+                    </WrapPanel>
+                    <ComboBox   Width="90"
+                                materialDesign:HintAssist.Hint="Pset"
+                                materialDesign:HintAssist.FloatingScale="1.1"
+                                ItemsSource="{Binding PsetIdList}"
+                                SelectedItem="{Binding Psetid}"
+                                Style="{StaticResource MaterialDesignFloatingHintComboBox}" />
+                </StackPanel>
+            </GroupBox>
+            <!--    VIN     -->
+            <GroupBox Width="360" Height="120" Margin="1"
+             Header="VIN"
+             materialDesign:GroupBoxAssist.HeaderPadding="4"
+             Padding="0"
+             Style="{StaticResource MaterialDesignGroupBox}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" >
+                        <Button  Width="115" Height="42" Margin="1"
+                         Content="VN码订阅" Command="{Binding CommandSubscribeVN }"
+                         Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                         ToolTip="码订阅" />
+                        <Button  Width="115" Height="42" Margin="1"
+                         Content="下发VIN" Command="{Binding CommandModifyVN}"
+                         Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                         ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                          Content="下发多段VIN" Command="{Binding CommandModifyVN150}"
+                          Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                          ToolTip="目前仅支持单段" />
+                    </StackPanel>
+                    <TextBox Width="340" Height="42" VerticalAlignment="Bottom" 
+                       materialDesign:HintAssist.Hint="VIN:" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+              Text="{Binding SN }" />
+                </StackPanel>
+            </GroupBox>
+            <!-- 使能 -->
+            <GroupBox Width="260" Height="120" Margin="1"
+            Header="使能与报警"
+            materialDesign:GroupBoxAssist.HeaderPadding="4"
+            Padding="0"
+            Style="{StaticResource MaterialDesignGroupBox}">
+                <WrapPanel Orientation="Vertical" Margin="10,0,0,0" >
+                    <Button  Width="116" Height="42" Margin="2"
+                        Content="工具使能" Command="{Binding CommandEnableTools }"
+                        Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                        ToolTip="工具使能,运行工具运行" />
+                    <Button  Width="116" Height="42" Margin="1"
+                          Content="禁止工具使能" Command="{Binding CommandDisableTools}"
+                          Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                          ToolTip="禁止工具使能,工具不允许动作,且Op断连后自动锁定工具" />
+                    <Button  Width="116" Height="42" Margin="2"
+                         Content="报警订阅" Command="{Binding CommandSubscribeAlarm }"
+                         Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                         ToolTip="报警订阅" />
+                    <Button  Width="116" Height="42" Margin="1"
+                           Content="取消报警订阅" Command="{Binding CommandUnsubscribeAlarm}"
+                           Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                           ToolTip="取消报警订阅" />
+                </WrapPanel>
+            </GroupBox>
+            <!--    Job     -->
+            <GroupBox Width="460" Height="120" Margin="1"
+             Header="Job"
+             materialDesign:GroupBoxAssist.HeaderPadding="4"
+             Padding="0"
+             Style="{StaticResource MaterialDesignGroupBox}">
+                <StackPanel Orientation="Horizontal" >
+                    <WrapPanel Width="360" Height="100"  Orientation="Horizontal" >
+                        <Button  Width="115" Height="42" Margin="1"
+                             Content="可用Job列表" Command="{Binding CommandGetJobList }"
+                             Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                             ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                           Content="订阅当前Job" Command="{Binding CommandSubscribeJobInfo}"
+                           Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                           ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                          Content="获取Job信息" Command="{Binding CommandGetJobInfo  }"
+                          Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                          ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                          Content="切换当前Job" Command="{Binding CommandSetJobId  }"
+                          Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                          ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                           Content="重启Job" Command="{Binding CommandRestartJob  }"
+                           Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                           ToolTip="" />
+                        <Button  Width="115" Height="42" Margin="1"
+                            Content="终止Job" Command="{Binding CommandAbortJob  }"
+                            Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                            ToolTip="" />
+                    </WrapPanel>
+                    <ComboBox  Width="90"
+                               materialDesign:HintAssist.Hint="Job"
+                               materialDesign:HintAssist.FloatingScale="1.1"
+                               ItemsSource="{Binding JobList}"
+                               SelectedItem="{Binding Jobid}"
+                               Style="{StaticResource MaterialDesignFloatingHintComboBox}" />
+                </StackPanel>
+            </GroupBox>
+
+
+            <!-- 结果,曲线订阅 -->
+            <GroupBox Width="360" Height="120" Margin="1"
+           Header="结果,曲线订阅"
+           materialDesign:GroupBoxAssist.HeaderPadding="4"
+           Padding="0"
+           Style="{StaticResource MaterialDesignGroupBox}">
+                <WrapPanel Orientation="Vertical" >
+                    <Button  Width="115" Height="42" Margin="2"
+                Content="结果订阅" Command="{Binding CommandSubscribeResult }"
+                Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                ToolTip="结果订阅,工具运行完后主动推送0061" />
+                    <Button  Width="115" Height="42" Margin="1"
+              Content="取消结果订阅" Command="{Binding CommandUnsubscribeResult}"
+              Style="{StaticResource MaterialDesignRaisedDarkButton}"
+              ToolTip="取消结果订阅" />
+                    <Button  Width="115" Height="42" Margin="1"
+                        Content="曲线订阅" Command="{Binding CommandSubscribeCurve }"
+                        Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                        ToolTip="" />
+                    <Button  Width="115" Height="42" Margin="1"
+              Content="取消曲线订阅" Command="{Binding CommandUnsubscribeCurve }"
+              Style="{StaticResource MaterialDesignRaisedDarkButton}"
+              ToolTip="" />
+                    <Button  Width="115" Height="42" Margin="1"
+           Content="分步结果订阅" Command="{Binding CommandSubscribePhaseResult }"
+           Style="{StaticResource MaterialDesignRaisedDarkButton}"
+           ToolTip="" />
+                    <Button  Width="115" Height="42" Margin="1"
+    Content="取消分步订阅" Command="{Binding CommandUnsubscribePset }"
+    Style="{StaticResource MaterialDesignRaisedDarkButton}"
+    ToolTip="" />
+                </WrapPanel>
+            </GroupBox>
+        </WrapPanel>
+        <Rectangle Fill="Black" Height="2" Margin="1"  />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="75*"/>
+                <ColumnDefinition MaxWidth="360" MinWidth="200" Width="25*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" DockPanel.Dock="Left" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Orientation="Vertical">
+                <!-- 状态展示 -->
+                <ListView AlternationCount="{Binding Msgs.Count}" 
+                           Height="{Binding ElementName=app, Path=ActualHeight ,Converter={local:ListViewHeightConverter}}"
+                           VerticalAlignment="Top" HorizontalAlignment="Stretch"   
+                           ItemsSource="{Binding Msgs}"
+                           SelectedItem="{Binding SelectedItem}"
+                           >
+                    <i:Interaction.Behaviors>
+                        <local:ScrollToBottomBehavior />
+                    </i:Interaction.Behaviors>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Height" Value="23"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View  >
+                        <GridView >
+                            <GridView.ColumnHeaderContainerStyle>
+                                <Style TargetType="{x:Type GridViewColumnHeader}">
+                                    <Setter Property="Height" Value="32"/>
+                                </Style>
+                            </GridView.ColumnHeaderContainerStyle>
+
+                           <GridViewColumn Header="时间" Width="140" DisplayMemberBinding="{Binding Time}" />
+                            <!--<GridViewColumn Header="序号" DisplayMemberBinding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,  AncestorType=ListViewItem },  
+                         Path =(ItemsControl.AlternationIndex) }"  
+                         Width="80"  />-->
+                            <GridViewColumn  Width="100"  Header="状态" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock HorizontalAlignment="Center" Text="{Binding Flag,Converter={local:Mid2DescConverter}}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Flag}" Value="4">
+                                                            <Setter Property="Foreground"  Value="Red"/>
+                                                            <Setter Property="FontWeight" Value="ExtraBold"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Flag}" Value="5">
+                                                            <Setter Property="Foreground"  Value="Green"/>
+                                                            <Setter Property="FontWeight" Value="ExtraBold"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Flag}" Value="0">
+                                                            <Setter Property="Foreground"  Value="Gray"/>
+                                                            <Setter Property="FontWeight" Value="Light"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn   Width="600" Header="命令"    >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Margin="0" TextAlignment="Left"   MinWidth="200"   Text="{Binding Buff ,Converter={local:ByteBuffer2StrConverter}}"   />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <Rectangle Fill="Black" Height="2" Margin="1"  />
+                <TextBox    Height="140" materialDesign:HintAssist.FloatingScale="1.2"
+         VerticalAlignment="Top"
+         materialDesign:HintAssist.Hint="Hex:"
+         AcceptsReturn="True"
+         Style="{StaticResource MaterialDesignFilledTextBox}"
+         TextWrapping="Wrap"
+         Text="{Binding SelectedItem.Buff , Converter={local:ByteBuffer2HexStrConverter} }"
+         VerticalScrollBarVisibility="Auto" />
+            </StackPanel>
+            <TextBox  Grid.Column="1"  
+                      VerticalAlignment="Stretch"
+                      VerticalContentAlignment="Top"
+                      materialDesign:HintAssist.Hint="Mid属性:"
+                      Padding="5"
+                      Height="{Binding Source={RelativeSource AncestorType=Grid}, Path=ActualHeight}"
+                      TextWrapping="Wrap"
+                      Text="{Binding SelectedItem.Buff, Converter={local:ByteBuffer2MidStrConverter}}"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto" />
+            <Rectangle Grid.Column="1" HorizontalAlignment="Left"   Fill="Black" Height="{Binding Source={RelativeSource AncestorType=Grid}, Path=ActualHeight}" Margin="1,0,0,0" Width="1" />
+
+        </Grid>
+
+        </StackPanel>
+</Window>

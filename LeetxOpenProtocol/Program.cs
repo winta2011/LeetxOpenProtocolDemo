@@ -59,15 +59,19 @@ namespace Leetx.OpenProtocol
             var cmd = Console.ReadLine();
             while (cmd != "quit")
             {
-                cmd = Console.ReadLine();
-                if (cmd == "10")
+                if (cmd == "10") //获取Pset列表
                 {
                     var mid = await client.SendMidWithResponse(new Mid0010(1)); //支持版本1
                     PrintMidInfo(mid);
                 }
-                else if (cmd == "12")
+                else if (cmd == "12") // 获取Pset内容
                 {
                     var mid = await client.SendMidWithResponse(new Mid0012(2) { ParameterSetId =1 }); //支持版本1,
+                    PrintMidInfo(mid);
+                }
+                else if (cmd == "14") //Pset订阅
+                {
+                    var mid = await client.SendMidWithResponse(new Mid0014(2) ); //支持版本1,
                     PrintMidInfo(mid);
                 }
                 else if (cmd == "18")//切Pset
@@ -95,6 +99,11 @@ namespace Leetx.OpenProtocol
                     var mid = await client.SendMidWithResponse(new Mid0038(1) { JobId=1}); // 支持版本1
                     PrintMidInfo(mid);
                 }
+                else if (cmd == "39")//重启JOB
+                {
+                    var mid = await client.SendMidWithResponse(new Mid0039(1) { JobId = 1 }); // 支持版本1
+                    PrintMidInfo(mid);
+                }
                 else if (cmd == "42")// 工具禁使能
                 {
                     var mid = await client.SendMidWithResponse(new Mid0042(1)); // 支持版本1,2
@@ -105,7 +114,6 @@ namespace Leetx.OpenProtocol
                     var mid = await client.SendMidWithResponse(new Mid0043(1)); // 支持版本1,2
                     PrintMidInfo(mid);
                 }
-                //VIN
                 else if (cmd == "50")//下发VIN
                 {
                     var mid = await client.SendMidWithResponse(new Mid0050() { VinNumber="LX1234567890"  }); // 支持版本1
@@ -121,12 +129,12 @@ namespace Leetx.OpenProtocol
                     var mid = await client.SendMidWithResponse(new Mid0060(3)); // 支持版本1,2,3
                     PrintMidInfo(mid);
                 }
-                else if (cmd == "63")// 订阅结果
+                else if (cmd == "63") // 订阅结果
                 {
                     var mid = await client.SendMidWithResponse(new Mid0063(3)); // 支持版本1,2,3
                     PrintMidInfo(mid);
                 }
-                else if (cmd == "64")// 根据拧紧Id查询结果
+                else if (cmd == "64") // 根据拧紧Id查询结果
                 {
                     var mid = await client.SendMidWithResponse(new Mid0064() { TighteningId=142928}); // 支持版本1
                     PrintMidInfo(mid);
@@ -161,10 +169,31 @@ namespace Leetx.OpenProtocol
                     var mid = await client.SendMidWithResponse(new Mid0150() { IdentifierData = "LX1234567890" }); // 支持版本1
                     PrintMidInfo(mid);
                 }
+                else if (cmd == "7402")//订阅分步结果
+                {
+                    var mid = await client.SendMidWithResponse(new Mid7402()); // 支持版本1
+                    PrintMidInfo(mid);
+                }
+                else if (cmd == "7403")//取消订阅分步结果
+                {
+                    var mid = await client.SendMidWithResponse(new Mid7403()); // 支持版本1
+                    PrintMidInfo(mid);
+                }
+                else if (cmd == "7408")//订阅曲线
+                {
+                    var mid = await client.SendMidWithResponse(new Mid7408()); // 支持版本1
+                    PrintMidInfo(mid);
+                }
+                else if (cmd == "7409")//取消订阅曲线
+                {
+                    var mid = await client.SendMidWithResponse(new Mid7409()); // 支持版本1
+                    PrintMidInfo(mid);
+                }
                 else
                 {
                     Console.WriteLine("Unknown Command");
                 }
+                cmd = Console.ReadLine();
             }
         }
 

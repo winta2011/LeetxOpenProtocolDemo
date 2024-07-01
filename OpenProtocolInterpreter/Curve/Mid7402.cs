@@ -14,6 +14,10 @@ namespace OpenProtocolInterpreter.Curve
         private const int LAST_REVISION = 1;
         public const int MID = 7402;
 
+        public Mid7402() : base(MID, 1, false)
+        {
+
+        }
         public Mid7402( int revision=1, bool noAckFlag = false) : base(MID, revision, noAckFlag)
         {
         }

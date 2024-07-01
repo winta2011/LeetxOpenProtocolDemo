@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpDemo", "OpDemo\OpDemo.csproj", "{757978AF-5475-4E00-8679-0199F48A8B85}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenProtocolInterpreter", "OpenProtocolInterpreter\OpenProtocolInterpreter.csproj", "{C9DBFCFE-BB7B-41D5-9048-771D4E93589D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Leetx.OpenProtocol", "LeetxOpenProtocol\Leetx.OpenProtocol.csproj", "{757978AF-5475-4E00-8679-0199F48A8B85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeetxOpenProtocolDemo", "LeetxOpenProtocolDemo\LeetxOpenProtocolDemo.csproj", "{C5FCE568-E268-4029-898A-4AC30041760E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{757978AF-5475-4E00-8679-0199F48A8B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{757978AF-5475-4E00-8679-0199F48A8B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{757978AF-5475-4E00-8679-0199F48A8B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{757978AF-5475-4E00-8679-0199F48A8B85}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9DBFCFE-BB7B-41D5-9048-771D4E93589D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9DBFCFE-BB7B-41D5-9048-771D4E93589D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9DBFCFE-BB7B-41D5-9048-771D4E93589D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9DBFCFE-BB7B-41D5-9048-771D4E93589D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{757978AF-5475-4E00-8679-0199F48A8B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{757978AF-5475-4E00-8679-0199F48A8B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{757978AF-5475-4E00-8679-0199F48A8B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{757978AF-5475-4E00-8679-0199F48A8B85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5FCE568-E268-4029-898A-4AC30041760E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5FCE568-E268-4029-898A-4AC30041760E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5FCE568-E268-4029-898A-4AC30041760E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5FCE568-E268-4029-898A-4AC30041760E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
