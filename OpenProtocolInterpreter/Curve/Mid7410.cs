@@ -26,7 +26,7 @@ namespace OpenProtocolInterpreter.Curve
 
         public double TimeCoefficient
         {
-            get;set;
+            get; set;
         }
 
         public double TorqueCoefficient
@@ -64,7 +64,7 @@ namespace OpenProtocolInterpreter.Curve
         public Mid7410()
           : this(2)
         {
-       
+
         }
 
         public Mid7410(int revision = 2)
@@ -79,17 +79,17 @@ namespace OpenProtocolInterpreter.Curve
         [Obsolete("Always Null", true)]
         protected override string BuildHeader()
         {
-        
+
             return "";
         }
 
         [Obsolete("Always Null", true)]
         public override string Pack()
         {
-            
+
             return "";
         }
-        [Obsolete("Always Null",true)]
+        [Obsolete("Always Null", true)]
         public override byte[] PackBytes()
         {
             return null;
@@ -100,9 +100,9 @@ namespace OpenProtocolInterpreter.Curve
             return this.Parse(Encoding.ASCII.GetBytes(package));
         }
 
-       
 
-       
+
+
         public override Mid Parse(byte[] frame)
         {
 
@@ -120,7 +120,7 @@ namespace OpenProtocolInterpreter.Curve
             }
             Mid7410 m7410 = new Mid7410(Revision);
             m7410.Header.Length = Length;
-            m7410.Header.NoAckFlag = NoAckFlag==1;
+            m7410.Header.NoAckFlag = NoAckFlag == 1;
             m7410.Header.Revision = Revision;
             try
             {
@@ -182,7 +182,7 @@ namespace OpenProtocolInterpreter.Curve
                 }
                 else
                 {
-                    d[dindex++] = (byte)(oriData[i] -1);
+                    d[dindex++] = (byte)(oriData[i] - 1);
                 }
             }
             try
@@ -201,23 +201,47 @@ namespace OpenProtocolInterpreter.Curve
                     {
                         for (int j = 0; j < dindex - 1;)
                         {
-                            m7410.Torque.Add(BitConverter.ToInt16(d, j) *0.01);
-                            j += 2;
-                            m7410.Angle.Add(BitConverter.ToInt32(d, j) * 0.1);
-                            j += 4;
+                            if (m7410.TorqueCoefficient == 0.01)
+                            {
+
+                                m7410.Torque.Add(BitConverter.ToInt16(d, j) * m7410.TorqueCoefficient);
+                                j += 2;
+                                m7410.Angle.Add(BitConverter.ToInt32(d, j) * 0.1);
+                                j += 4;
+                            }
+
+                            else
+                            {
+                                m7410.Torque.Add(BitConverter.ToUInt16(d, j) * m7410.TorqueCoefficient);
+                                j += 2;
+                                m7410.Angle.Add(BitConverter.ToUInt32(d, j) * 0.1);
+                                j += 4;
+                            }
                         }
                     }
                     break;
                 case 2:
                     {
-                        for (int j = 0; j < dindex - 1; )
+                        for (int j = 0; j < dindex - 1;)
                         {
-                            m7410.Torque.Add(BitConverter.ToInt16(d, j) * 0.01);
-                            j += 2;
-                            m7410.Angle.Add(BitConverter.ToInt32(d, j) * 0.1);
-                            j += 4;
-                            m7410.Speed.Add(BitConverter.ToInt16(d, j) * 0.1);
-                            j += 2;
+                            if (m7410.TorqueCoefficient == 0.01)
+                            {
+                                m7410.Torque.Add(BitConverter.ToInt16(d, j) * 0.01);
+                                j += 2;
+                                m7410.Angle.Add(BitConverter.ToInt32(d, j) * 0.1);
+                                j += 4;
+                                m7410.Speed.Add(BitConverter.ToInt16(d, j) * 0.1);
+                                j += 2;
+                            }
+                            else
+                            {
+                                m7410.Torque.Add(BitConverter.ToUInt16(d, j) * m7410.TorqueCoefficient);
+                                j += 2;
+                                m7410.Angle.Add(BitConverter.ToUInt32(d, j) * 0.1);
+                                j += 4;
+                                m7410.Speed.Add(BitConverter.ToUInt16(d, j) * 0.1);
+                                j += 2;
+                            }
                         }
                     }
                     break;
