@@ -49,7 +49,7 @@ jobs:
 
           # If you're using dotnet test (for multi-targeting or if you have .NET Core/5+ tests in the same solution),
           # this might work, but it's less common for pure .NET Framework projects.
-          # dotnet test YourSolutionName.sln
+          # dotnet test Leetx.OpenProtocol.sln
         continue-on-error: true # Allow subsequent steps to run even if tests fail, for reporting purposes
 
       - name: Upload Artifacts (Optional)
