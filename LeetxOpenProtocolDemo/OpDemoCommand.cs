@@ -32,10 +32,10 @@ namespace Leetx.OpenProtocolDemo
 
         private void Client_TightingProcessExceptioneEvent(string arg1, TightingProcessException arg2)
         {
-             Console.WriteLine(arg2.Message + " " + arg1);
+            Console.WriteLine(arg2.Message + " " + arg1);
         }
-    
-        void addMessageItem(byte[] arg2,int flag=0)
+
+        void addMessageItem(byte[] arg2, int flag = 0)
         {
             var t = DateTime.Now.ToString("HH:mm:ss.ffff");
             App.Current.Dispatcher.InvokeAsync(() =>
@@ -57,7 +57,7 @@ namespace Leetx.OpenProtocolDemo
 
         private void Client_TightingWriteEvent(int arg1, byte[] arg2)
         {
-            addMessageItem( arg2 );
+            addMessageItem(arg2);
         }
 
         /// <summary>
@@ -103,9 +103,9 @@ namespace Leetx.OpenProtocolDemo
         {
             Task.Run(async () =>
             {
-                var mid = (Mid0011) await client.SendMidWithResponse(new Mid0010(1));
+                var mid = (Mid0011)await client.SendMidWithResponse(new Mid0010(1));
                 PsetIdList = mid.ParameterSets;
-                if(PsetIdList.Count>0) Psetid = PsetIdList[0];
+                if (PsetIdList.Count > 0) Psetid = PsetIdList[0];
                 else Psetid = 0;
             });
 
@@ -122,7 +122,7 @@ namespace Leetx.OpenProtocolDemo
             client.SendMidWithResponse(new Mid0012(2) { ParameterSetId = Psetid });
         }, x =>
         {
-            return client.ConnnectStatus == OpClient.ConnectStatusEnum.Connected && Psetid!=0;
+            return client.ConnnectStatus == OpClient.ConnectStatusEnum.Connected && Psetid != 0;
         });
 
         /// <summary>
@@ -165,9 +165,9 @@ namespace Leetx.OpenProtocolDemo
         {
             Task.Run(async () =>
             {
-                var c =(Mid0031) await client.SendMidWithResponse(new Mid0030(2));
+                var c = (Mid0031)await client.SendMidWithResponse(new Mid0030(2));
                 JobList = c.JobIds;
-                Jobid = JobList.Count >0 ? JobList[0] : 0;
+                Jobid = JobList.Count > 0 ? JobList[0] : 0;
             });
 
         }, x =>
@@ -249,7 +249,7 @@ namespace Leetx.OpenProtocolDemo
             client.SendMidWithResponse(new Mid0050() { VinNumber = this.SN });
         }, x =>
         {
-            return client.ConnnectStatus == OpClient.ConnectStatusEnum.Connected ;
+            return client.ConnnectStatus == OpClient.ConnectStatusEnum.Connected;
         });
         /// <summary>
         /// 修改多段 Sn/VIN码,支持版本1,目前仅支持单段
@@ -259,7 +259,7 @@ namespace Leetx.OpenProtocolDemo
             client.SendMidWithResponse(new OpenProtocolInterpreter.MultipleIdentifiers.Mid0150() { IdentifierData = this.SN });
         }, x =>
         {
-            return client.ConnnectStatus == OpClient.ConnectStatusEnum.Connected  ;
+            return client.ConnnectStatus == OpClient.ConnectStatusEnum.Connected;
         });
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace Leetx.OpenProtocolDemo
         /// </summary>
         public ICommand CommandSubscribeAlarm => new LeetxCommand((x) =>
         {
-            client.SendMidWithResponse(new Mid0070() );
+            client.SendMidWithResponse(new Mid0070());
         }, x =>
         {
             return client.ConnnectStatus == OpClient.ConnectStatusEnum.Connected;
