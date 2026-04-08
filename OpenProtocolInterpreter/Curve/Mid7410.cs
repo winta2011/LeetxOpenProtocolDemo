@@ -54,6 +54,7 @@ namespace OpenProtocolInterpreter.Curve
             get; set;
         }
 
+        public int TighteningId { get; set; }
 
         public List<double> Torque { get; private set; }
 
@@ -129,6 +130,7 @@ namespace OpenProtocolInterpreter.Curve
                 m7410.ParameterSetId = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(6).Take(3).ToArray()));   //pset号
                 if (Revision == 2)
                 {
+                    m7410.TighteningId = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(11).Take(10).ToArray()));  //拧紧ID
                     m7410.TorqueCoefficient = double.Parse(Encoding.ASCII.GetString(dataArray.Skip(39).Take(14).ToArray()));  //扭矩系数
                     m7410.AngleCoefficient = double.Parse(Encoding.ASCII.GetString(dataArray.Skip(55).Take(14).ToArray()));   //角度系数
                     m7410.NumMeasurementPoints = int.Parse(Encoding.ASCII.GetString(dataArray.Skip(87).Take(4).ToArray()));   //点数
